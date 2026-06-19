@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  EVALUATOR
+  PATIENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PhysicalActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+  VERY_ACTIVE
+}
+
+enum Goal {
+  FAT_LOSS
+  MUSCLE_GAIN
+  BODY_RECOMPOSITION
+  SPORTS_PERFORMANCE
+  MAINTENANCE
+}
+
+model User {
+  id            String    @id @default(uuid()) // Links to Supabase Auth UUID
+  email         String    @unique
+  role          Role      @default(EVALUATOR)
+  firstName     String
+  lastName      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones
+  managedPatients Patient[] @relation("EvaluatorToPatient")
+  patientProfile  Patient?  @relation("UserToPatientProfile")
+}
+
+model Patient {
+  id              String   @id @default(uuid())
+  evaluatorId     String
+  userId          String?  @unique // Si el paciente tiene cuenta de login
+  
+  firstName       String
+  lastName        String
+  gender          Gender
+  birthDate       DateTime
+  documentId      String?
+  phone           String?
+  email           String?
+  address         String?
+  
+  initialWeight   Float
+  height          Float
+  activityLevel   PhysicalActivityLevel
+  goal            Goal
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  evaluator       User     @relation("EvaluatorToPatient", fields: [evaluatorId], references: [id])
+  userProfile     User?    @relation("UserToPatientProfile", fields: [userId], references: [id])
+  evaluations     Evaluation[]
+}
+
+model Evaluation {
+  id              String   @id @default(uuid())
+  patientId       String
+  date            DateTime
+  decimalAge      Float?
+  
+  // Datos Generales
+  weight          Float
+  height          Float
+
+  // Perímetros (cm)
+  girthThorax     Float?
+  girthAbdomen    Float?
+  girthWaist      Float?
+  girthHip        Float?
+  girthRelaxedArm Float?
+  girthFlexedArm  Float?
+  girthForearm    Float?
+  girthWrist      Float?
+  girthThigh      Float?  // Muslo Medio
+  girthMaxThigh   Float?  // Muslo Maximo
+  girthCalf       Float?
+
+  // Diámetros (cm)
+  breadthHumerus  Float?
+  breadthFemur    Float?
+  breadthBistyl   Float?
+  breadthBimal    Float?
+
+  // Pliegues (mm)
+  skinfoldTriceps Float?
+  skinfoldSubscap Float?
+  skinfoldBiceps  Float?
+  skinfoldIliac   Float?
+  skinfoldSuprasp Float?
+  skinfoldAbdom   Float?
+  skinfoldThigh   Float?
+  skinfoldCalf    Float?
+
+  // Resultados Calculados
+  bmi             Float?
+  bodyFatPct      Float?
+  bodyFatKg       Float?
+  muscleMassPct   Float?
+  muscleMassKg    Float?
+  boneMassKg      Float?
+  residualMassKg  Float?
+  fatFreeMass     Float?
+  idealWeight     Float?
+
+  // Metas Personalizadas
+  targetBodyFatPct    Float?
+  targetMuscleMassPct Float?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  photos          EvaluationPhoto[]
+  recommendation  Recommendation?
+}
+
+model EvaluationPhoto {
+  id            String   @id @default(uuid())
+  evaluationId  String
+  type          String   // FRONTAL, POSTERIOR, PROFILE_LEFT, PROFILE_RIGHT
+  url           String
+  createdAt     DateTime @default(now())
+
+  evaluation    Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+}
+
+model Recommendation {
+  id            String   @id @default(uuid())
+  evaluationId  String   @unique
+  observations  String?  @db.Text
+  conclusions   String?  @db.Text
+  recommendations String? @db.Text
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  evaluation    Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+}
