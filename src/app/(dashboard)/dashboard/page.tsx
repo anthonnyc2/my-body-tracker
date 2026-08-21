@@ -1,11 +1,62 @@
 import { Activity, Users, FileText, TrendingUp, Plus } from "lucide-react"
 import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+import { es } from "date-fns/locale"
 import { createClient } from "@/lib/supabase/server"
+import { prisma } from "@/lib/prisma"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const firstName = user?.user_metadata?.first_name || "Evaluador"
+
+  if (!user) {
+    return null
+  }
+
+  const evaluatorId = user.id
+  const now = new Date()
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+  const [
+    totalPatients,
+    newPatientsThisWeek,
+    totalEvaluations,
+    evaluationsThisMonth,
+    reportsGenerated,
+    successCasesResult,
+    recentEvaluations,
+  ] = await Promise.all([
+    prisma.patient.count({ where: { evaluatorId } }),
+    prisma.patient.count({ where: { evaluatorId, createdAt: { gte: weekAgo } } }),
+    prisma.evaluation.count({ where: { patient: { evaluatorId } } }),
+    prisma.evaluation.count({ where: { patient: { evaluatorId }, createdAt: { gte: monthAgo } } }),
+    prisma.evaluation.count({ where: { patient: { evaluatorId }, recommendation: { isNot: null } } }),
+    prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT count(*) as count
+      FROM "Evaluation" e
+      JOIN "Patient" p ON p.id = e."patientId"
+      WHERE p."evaluatorId" = ${evaluatorId}
+      AND (
+        (e."targetBodyFatPct" IS NOT NULL AND e."bodyFatPct" IS NOT NULL AND e."bodyFatPct" <= e."targetBodyFatPct")
+        OR
+        (e."targetMuscleMassPct" IS NOT NULL AND e."muscleMassPct" IS NOT NULL AND e."muscleMassPct" >= e."targetMuscleMassPct")
+      )
+    `,
+    prisma.evaluation.findMany({
+      where: { patient: { evaluatorId } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        createdAt: true,
+        patient: { select: { firstName: true, lastName: true } },
+      },
+    }),
+  ])
+
+  const successCases = Number(successCasesResult[0]?.count ?? 0)
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -32,28 +83,28 @@ export default async function DashboardPage() {
 
       {/* KPI Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard 
-          title="Pacientes Activos" 
-          value="12" 
-          icon={<Users className="h-5 w-5 text-primary" />} 
-          trend="+2 esta semana"
+        <KPICard
+          title="Pacientes Activos"
+          value={String(totalPatients)}
+          icon={<Users className="h-5 w-5 text-primary" />}
+          trend={`+${newPatientsThisWeek} esta semana`}
         />
-        <KPICard 
-          title="Evaluaciones Totales" 
-          value="48" 
-          icon={<Activity className="h-5 w-5 text-secondary" />} 
-          trend="+5 este mes"
+        <KPICard
+          title="Evaluaciones Totales"
+          value={String(totalEvaluations)}
+          icon={<Activity className="h-5 w-5 text-secondary" />}
+          trend={`+${evaluationsThisMonth} este mes`}
         />
-        <KPICard 
-          title="Reportes Generados" 
-          value="36" 
-          icon={<FileText className="h-5 w-5 text-primary" />} 
-          trend="PDFs descargados"
+        <KPICard
+          title="Reportes Generados"
+          value={String(reportsGenerated)}
+          icon={<FileText className="h-5 w-5 text-primary" />}
+          trend="Con recomendaciones"
         />
-        <KPICard 
-          title="Casos de Éxito" 
-          value="8" 
-          icon={<TrendingUp className="h-5 w-5 text-secondary" />} 
+        <KPICard
+          title="Casos de Éxito"
+          value={String(successCases)}
+          icon={<TrendingUp className="h-5 w-5 text-secondary" />}
           trend="Metas alcanzadas"
         />
       </div>
@@ -70,9 +121,18 @@ export default async function DashboardPage() {
         <div className="col-span-3 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
           <h3 className="font-semibold text-xl mb-4">Actividad Reciente</h3>
           <div className="space-y-4">
-            <ActivityRow patient="Carlos Ruiz" action="Evaluación inicial" time="Hace 2 horas" />
-            <ActivityRow patient="María Pérez" action="Actualización de medidas" time="Ayer" />
-            <ActivityRow patient="Luis Gómez" action="Nuevo reporte PDF" time="Ayer" />
+            {recentEvaluations.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aún no hay evaluaciones registradas.</p>
+            ) : (
+              recentEvaluations.map((evaluation) => (
+                <ActivityRow
+                  key={evaluation.id}
+                  patient={`${evaluation.patient.firstName} ${evaluation.patient.lastName}`}
+                  action="Nueva evaluación registrada"
+                  time={formatDistanceToNow(evaluation.createdAt, { addSuffix: true, locale: es })}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
