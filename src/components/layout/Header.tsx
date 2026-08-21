@@ -13,13 +13,13 @@ export function Header() {
       </div>
       <div className="flex items-center gap-4">
         <Link href="/dashboard/settings">
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full">
             <User className="h-5 w-5" />
             <span className="sr-only">Ir a Configuración</span>
           </Button>
         </Link>
         <form action={logoutAction}>
-          <Button variant="outline" size="sm" type="submit">
+          <Button variant="outline" size="default" className="h-11 px-5" type="submit">
             Salir
           </Button>
         </form>
