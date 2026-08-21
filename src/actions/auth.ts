@@ -2,7 +2,18 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
+
+async function getOrigin() {
+  const headersList = await headers()
+  const origin = headersList.get("origin")
+  if (origin) return origin
+
+  const proto = headersList.get("x-forwarded-proto") ?? "https"
+  const host = headersList.get("host")
+  return `${proto}://${host}`
+}
 
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string
@@ -44,6 +55,7 @@ export async function signupAction(formData: FormData) {
   }
 
   const supabase = await createClient()
+  const origin = await getOrigin()
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -52,7 +64,8 @@ export async function signupAction(formData: FormData) {
       data: {
         first_name: firstName,
         last_name: lastName,
-      }
+      },
+      emailRedirectTo: `${origin}/auth/callback`,
     }
   })
 
@@ -67,9 +80,15 @@ export async function signupAction(formData: FormData) {
       await ensureUserRecord(data.user)
     } catch (dbError) {
       console.error(`Error al sincronizar usuario ${data.user.id} (${data.user.email}) con Prisma tras signup:`, dbError)
-      // No bloqueamos el redirect: el usuario ya tiene sesión válida en Supabase Auth.
+      // No bloqueamos el flujo: el usuario ya quedó creado en Supabase Auth.
       // La fila en Prisma se autocorrige en el siguiente request al dashboard.
     }
+  }
+
+  // Si el proyecto de Supabase exige confirmación de email, signUp no devuelve
+  // sesión activa: el usuario debe confirmar desde su correo antes de poder entrar.
+  if (!data.session) {
+    return { needsConfirmation: true }
   }
 
   revalidatePath("/", "layout")

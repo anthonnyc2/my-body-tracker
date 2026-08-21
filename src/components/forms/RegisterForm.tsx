@@ -25,7 +25,8 @@ export function RegisterForm({
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
   const [error, setError] = useState<string | null>(null)
-  
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -45,7 +46,17 @@ export function RegisterForm({
     const res = await signupAction(formData)
     if (res?.error) {
       setError(res.error)
+    } else if (res?.needsConfirmation) {
+      setNeedsConfirmation(true)
     }
+  }
+
+  if (needsConfirmation) {
+    return (
+      <div className="p-4 rounded-lg bg-primary/10 text-foreground text-sm font-medium border border-primary/20 animate-in fade-in zoom-in duration-300">
+        Tu cuenta fue creada. Revisa tu correo y haz clic en el enlace de confirmación para poder iniciar sesión.
+      </div>
+    )
   }
 
   return (
