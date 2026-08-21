@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { EvaluationFormValues, evaluationSchema } from "@/types/evaluation"
+import { EvaluationFormValues, EvaluationFormInput, evaluationSchema } from "@/types/evaluation"
 import { createEvaluation, updateEvaluation } from "@/actions/evaluation"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
@@ -59,7 +59,7 @@ export function EvaluationForm({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<EvaluationFormValues>({
+  } = useForm<EvaluationFormInput, unknown, EvaluationFormValues>({
     resolver: zodResolver(evaluationSchema),
     defaultValues: initialData ? {
       ...initialData,
@@ -82,7 +82,7 @@ export function EvaluationForm({
   const dateValue = watch("date")
 
   // Helper for rendering girth fields with hover cards
-  const renderMeasurement = (name: keyof EvaluationFormValues, label: string, desc: string, imgPath: string, required?: boolean) => (
+  const renderMeasurement = (name: keyof EvaluationFormInput, label: string, desc: string, imgPath: string, required?: boolean) => (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <Label>
@@ -100,7 +100,7 @@ export function EvaluationForm({
           </HoverCardContent>
         </HoverCard>
       </div>
-      <Input type="number" step="0.1" min="0" {...register(name as Path<EvaluationFormValues>)} />
+      <Input type="number" step="0.1" min="0" {...register(name as Path<EvaluationFormInput>)} />
       {errors[name] && <span className="text-xs text-destructive">{errors[name]?.message as string}</span>}
     </div>
   )
@@ -124,7 +124,7 @@ export function EvaluationForm({
     setActiveTab(nextTab)
   }
 
-  const onError = (errors: FieldErrors<EvaluationFormValues>) => {
+  const onError = (errors: FieldErrors<EvaluationFormInput>) => {
     toast.error("Por favor revisa los campos marcados en rojo")
     if (errors.weight || errors.height || errors.date) {
       setActiveTab("basico")

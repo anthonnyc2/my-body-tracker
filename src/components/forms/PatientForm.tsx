@@ -17,7 +17,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { PatientFormValues, patientSchema } from "@/types/patient"
+import { PatientFormValues, PatientFormInput, patientSchema } from "@/types/patient"
 import { createPatient, updatePatient } from "@/actions/patient"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -68,7 +68,7 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<PatientFormValues>({
+  } = useForm<PatientFormInput, unknown, PatientFormValues>({
     resolver: zodResolver(patientSchema),
     defaultValues: {
       firstName: initialData?.firstName || "",
@@ -161,8 +161,8 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
                 locale={es}
                 defaultMonth={birthDateValue || new Date(new Date().getFullYear() - 25, 0)}
                 captionLayout="dropdown"
-                fromYear={1920}
-                toYear={new Date().getFullYear()}
+                startMonth={new Date(1920, 0)}
+                endMonth={new Date(new Date().getFullYear(), 11)}
               />
             </PopoverContent>
           </Popover>

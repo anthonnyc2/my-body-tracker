@@ -63,6 +63,7 @@ export const evaluationSchema = z.object({
 })
 
 export type EvaluationFormValues = z.infer<typeof evaluationSchema>
+export type EvaluationFormInput = z.input<typeof evaluationSchema>
 
 export const recommendationSchema = z.object({
   observations: z.string().optional(),
