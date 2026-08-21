@@ -58,6 +58,9 @@ export default function NewEvaluationPage() {
             Has registrado {usage.used} de {usage.limit} evaluaciones incluidas en tu plan gratuito.
             Actualiza tu plan para seguir registrando evaluaciones.
           </p>
+          <Link href="/dashboard/upgrade" className="mt-4">
+            <Button>Actualizar Plan</Button>
+          </Link>
         </div>
       </div>
     )

@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { getEvaluations } from "@/actions/evaluation"
 import { getEvaluationUsage } from "@/actions/subscription"
 import { DeleteEvaluationButton } from "@/components/DeleteEvaluationButton"
+import { UpgradeBanner } from "@/components/UpgradeBanner"
 
 export default function EvaluationsPage() {
   const { data: evaluations, isLoading } = useQuery({
@@ -49,6 +50,8 @@ export default function EvaluationsPage() {
           </Link>
         )}
       </div>
+
+      <UpgradeBanner />
 
       <div className="rounded-xl border bg-card text-card-foreground shadow">
         {isLoading ? (

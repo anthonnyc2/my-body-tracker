@@ -1,13 +1,28 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { Moon, Sun, Monitor, User, LogOut } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { Moon, Sun, Monitor, User, LogOut, KeyRound, CreditCard } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { logoutAction } from "@/actions/auth"
+import { getProfile } from "@/actions/profile"
+import { getEvaluationUsage } from "@/actions/subscription"
+import { ProfileForm } from "@/components/forms/ProfileForm"
+import { PasswordForm } from "@/components/forms/PasswordForm"
 
 export default function SettingsPage() {
   const { setTheme, theme } = useTheme()
+
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfile(),
+  })
+
+  const { data: usage } = useQuery({
+    queryKey: ["evaluationUsage"],
+    queryFn: () => getEvaluationUsage(),
+  })
 
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -30,24 +45,27 @@ export default function SettingsPage() {
           </p>
           
           <div className="flex flex-wrap gap-4">
-            <Button 
-              variant={theme === 'light' ? 'default' : 'outline'} 
+            <Button
+              suppressHydrationWarning
+              variant={theme === 'light' ? 'default' : 'outline'}
               className="gap-2 w-full sm:w-auto"
               onClick={() => setTheme('light')}
             >
               <Sun className="h-4 w-4" />
               Claro
             </Button>
-            <Button 
-              variant={theme === 'dark' ? 'default' : 'outline'} 
+            <Button
+              suppressHydrationWarning
+              variant={theme === 'dark' ? 'default' : 'outline'}
               className="gap-2 w-full sm:w-auto"
               onClick={() => setTheme('dark')}
             >
               <Moon className="h-4 w-4" />
               Oscuro
             </Button>
-            <Button 
-              variant={theme === 'system' ? 'default' : 'outline'} 
+            <Button
+              suppressHydrationWarning
+              variant={theme === 'system' ? 'default' : 'outline'}
               className="gap-2 w-full sm:w-auto"
               onClick={() => setTheme('system')}
             >
@@ -57,32 +75,61 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Account Details (Placeholder) */}
+        {/* Account Details */}
         <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <User className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">Perfil del Evaluador</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-6">
-            Opciones para actualizar tu información personal y contraseña.
+            Actualiza tu información personal.
           </p>
-          
-          <div className="bg-muted/30 border border-dashed rounded-xl p-8 text-center">
-            <p className="text-muted-foreground font-medium">
-              Gestión de perfil en desarrollo. Pronto podrás editar tus datos aquí.
-            </p>
-          </div>
+
+          {isProfileLoading || !profile ? (
+            <p className="text-sm text-muted-foreground">Cargando perfil...</p>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-4">{profile.email}</p>
+              <ProfileForm initialData={{ firstName: profile.firstName, lastName: profile.lastName }} />
+            </>
+          )}
         </div>
 
-        {/* Danger Zone */}
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 backdrop-blur-sm p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-destructive mb-2">Zona de Peligro</h2>
+        {/* Password */}
+        <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <KeyRound className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold">Contraseña</h2>
+          </div>
           <p className="text-sm text-muted-foreground mb-6">
-            Acciones sensibles de la cuenta.
+            Cambia la contraseña de acceso a tu cuenta.
           </p>
-          
+          <PasswordForm />
+        </div>
+
+        {/* Subscription */}
+        <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold">Suscripción</h2>
+          </div>
+          {usage && (
+            <p className="text-sm text-muted-foreground">
+              Plan actual:{" "}
+              <span className="font-medium text-foreground">
+                {usage.plan === "PRO" ? "Pro" : "Gratuito"}
+              </span>
+              {usage.limit !== null && ` · ${usage.used}/${usage.limit} evaluaciones usadas`}
+            </p>
+          )}
+          {/* TODO: build out full subscription management (billing cycle, renewal date,
+              upgrade/cancel, invoices) once payment processing is wired up. */}
+        </div>
+
+        {/* Session */}
+        <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
           <form action={logoutAction}>
-            <Button variant="destructive" className="gap-2">
+            <Button variant="outline" className="gap-2">
               <LogOut className="h-4 w-4" />
               Cerrar Sesión
             </Button>

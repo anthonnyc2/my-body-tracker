@@ -7,6 +7,7 @@ import { Plus, ArrowLeft, Activity, Pencil } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { UpgradeBanner } from "@/components/UpgradeBanner"
 import { getPatientById } from "@/actions/patient"
 import { getEvaluationUsage } from "@/actions/subscription"
 import { format } from "date-fns"
@@ -89,6 +90,8 @@ export default function PatientDetailPage() {
           )}
         </div>
       </div>
+
+      <UpgradeBanner />
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Profile Card */}
