@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-// import { useParams } from "next/navigation"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { PatientForm } from "@/components/forms/PatientForm"
 import { getPatientById } from "@/actions/patient"
 
-export default function EditPatientPage({ params }: { params: { id: string } }) {
+export default function EditPatientPage() {
+  const params = useParams()
   const id = params.id as string
 
   const { data: patient, isLoading } = useQuery({
