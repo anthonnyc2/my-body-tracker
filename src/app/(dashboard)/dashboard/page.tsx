@@ -110,15 +110,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Content Section */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
-          <h3 className="font-semibold text-xl mb-4">Evolución Promedio</h3>
-          <div className="h-[300px] w-full rounded-xl bg-muted/20 border border-dashed border-border/50 flex items-center justify-center text-muted-foreground">
-            Gráfico de tendencia general aquí
-          </div>
-        </div>
-        
-        <div className="col-span-3 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
+      <div className="grid gap-6">
+        <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
           <h3 className="font-semibold text-xl mb-4">Actividad Reciente</h3>
           <div className="space-y-4">
             {recentEvaluations.length === 0 ? (

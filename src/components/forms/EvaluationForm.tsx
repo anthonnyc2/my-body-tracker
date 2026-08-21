@@ -74,8 +74,6 @@ export function EvaluationForm({
       breadthFemur: initialBreadths?.breadthFemur || undefined,
       breadthBistyl: initialBreadths?.breadthBistyl || undefined,
       breadthBimal: initialBreadths?.breadthBimal || undefined,
-      targetBodyFatPct: undefined,
-      targetMuscleMassPct: undefined,
     }
   })
 
@@ -192,20 +190,6 @@ export function EvaluationForm({
               <Label>Talla / Altura (cm) <span className="text-destructive">*</span></Label>
               <Input type="number" step="0.1" min="0" {...register("height")} />
               {errors.height && <span className="text-xs text-destructive">{errors.height.message}</span>}
-            </div>
-            
-            {/* Metas Personalizadas */}
-            <div className="space-y-2">
-              <Label>Meta Grasa Corporal (%)</Label>
-              <Input type="number" step="0.1" min="0" max="100" placeholder="Ej. 15" {...register("targetBodyFatPct")} />
-              <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Opcional. Se usará el % óptimo estándar si se deja vacío.</p>
-              {errors.targetBodyFatPct && <span className="text-xs text-destructive">{errors.targetBodyFatPct.message}</span>}
-            </div>
-            <div className="space-y-2">
-              <Label>Meta Masa Muscular (%)</Label>
-              <Input type="number" step="0.1" min="0" max="100" placeholder="Ej. 45" {...register("targetMuscleMassPct")} />
-              <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Opcional. Se usará el % óptimo estándar si se deja vacío.</p>
-              {errors.targetMuscleMassPct && <span className="text-xs text-destructive">{errors.targetMuscleMassPct.message}</span>}
             </div>
           </div>
           <div className="flex justify-end pt-4">

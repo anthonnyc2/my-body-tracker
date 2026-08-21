@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { getEvaluationById, getPatientEvaluationsHistory } from "@/actions/evaluation"
 import { EvaluationComparison } from "@/components/EvaluationComparison"
 import { RecommendationEditor } from "@/components/RecommendationEditor"
+import { GoalsEditor } from "@/components/GoalsEditor"
 import { getBMICategory, calculateWHR, getWHRRisk, calculateSumOf6, calculateIdealWeight, calculateSomatotype, getBodyFatCategory, getMuscleMassCategory, getBoneMassCategory, calculateGoalProjections } from "@/lib/calculations"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -292,6 +293,15 @@ export default function EvaluationReportPage() {
             </div>
           </div>
         </div>
+
+        <GoalsEditor
+          evaluationId={current.id}
+          gender={patient.gender as "MALE" | "FEMALE" | "OTHER"}
+          targetBodyFatPct={current.targetBodyFatPct}
+          targetMuscleMassPct={current.targetMuscleMassPct}
+          currentBodyFatPct={current.bodyFatPct}
+          currentMuscleMassPct={current.muscleMassPct}
+        />
 
         {/* Goal Projections Section */}
         {goalProjections && (

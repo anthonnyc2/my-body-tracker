@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
-import { EvaluationFormValues, evaluationSchema } from "@/types/evaluation"
+import { EvaluationFormValues, evaluationSchema, GoalsFormValues, goalsSchema } from "@/types/evaluation"
 import { FREE_PLAN_EVALUATION_LIMIT } from "@/lib/constants"
 import { getEffectivePlan } from "@/lib/subscription"
 import {
@@ -273,6 +273,48 @@ export async function updateEvaluation(id: string, data: EvaluationFormValues) {
   } catch (error) {
     console.error("Error updating evaluation:", error)
     return { error: "Error al actualizar la evaluación" }
+  }
+}
+
+export async function updateEvaluationGoals(id: string, data: GoalsFormValues) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { error: "No autorizado" }
+  }
+
+  const parsed = goalsSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: "Datos inválidos" }
+  }
+
+  const { prisma } = await import("@/lib/prisma")
+
+  const existingEvaluation = await prisma.evaluation.findUnique({
+    where: { id },
+    include: { patient: true }
+  })
+
+  if (!existingEvaluation || existingEvaluation.patient.evaluatorId !== user.id) {
+    return { error: "Evaluación no encontrada o sin permisos" }
+  }
+
+  try {
+    await prisma.evaluation.update({
+      where: { id },
+      data: {
+        targetBodyFatPct: parsed.data.targetBodyFatPct ?? null,
+        targetMuscleMassPct: parsed.data.targetMuscleMassPct ?? null,
+      }
+    })
+
+    revalidatePath(`/dashboard/evaluations/${id}`)
+    revalidatePath(`/dashboard`)
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating evaluation goals:", error)
+    return { error: "Error al guardar las metas" }
   }
 }
 

@@ -56,10 +56,6 @@ export const evaluationSchema = z.object({
   skinfoldAbdom: optionalSkinfold,
   skinfoldThigh: optionalSkinfold,
   skinfoldCalf: optionalSkinfold,
-
-  // Custom Targets
-  targetBodyFatPct: optionalPercentage,
-  targetMuscleMassPct: optionalPercentage,
 })
 
 export type EvaluationFormValues = z.infer<typeof evaluationSchema>
@@ -72,3 +68,13 @@ export const recommendationSchema = z.object({
 })
 
 export type RecommendationFormValues = z.infer<typeof recommendationSchema>
+
+// Goals are set once the results are known (e.g. "estás en 30% de grasa, bajemos a 24%"),
+// not before the measurement is taken, so they're edited separately from the main form.
+export const goalsSchema = z.object({
+  targetBodyFatPct: optionalPercentage,
+  targetMuscleMassPct: optionalPercentage,
+})
+
+export type GoalsFormValues = z.infer<typeof goalsSchema>
+export type GoalsFormInput = z.input<typeof goalsSchema>
