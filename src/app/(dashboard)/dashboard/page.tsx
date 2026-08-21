@@ -111,8 +111,8 @@ export default async function DashboardPage() {
 
       {/* Content Section */}
       <div className="grid gap-6">
-        <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm">
-          <h3 className="font-semibold text-xl mb-4">Actividad Reciente</h3>
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="font-semibold text-xl mb-4">Actividad Reciente</h2>
           <div className="space-y-4">
             {recentEvaluations.length === 0 ? (
               <p className="text-sm text-muted-foreground">Aún no hay evaluaciones registradas.</p>
