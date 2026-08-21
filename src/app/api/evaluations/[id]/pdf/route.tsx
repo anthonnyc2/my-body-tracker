@@ -272,7 +272,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const patientName = `${patient.firstName}-${patient.lastName}`.replace(/\s+/g, "-")
   const filename = `evaluacion-${patientName}-${evaluation.date.toISOString().slice(0, 10)}.pdf`
 
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,

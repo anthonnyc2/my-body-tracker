@@ -30,6 +30,28 @@ interface PatientFormProps {
   patientId?: string
 }
 
+const GENDER_LABELS: Record<PatientFormValues["gender"], string> = {
+  MALE: "Masculino",
+  FEMALE: "Femenino",
+  OTHER: "Otro",
+}
+
+const ACTIVITY_LEVEL_LABELS: Record<PatientFormValues["activityLevel"], string> = {
+  SEDENTARY: "Sedentario",
+  LIGHT: "Ligero",
+  MODERATE: "Moderado",
+  ACTIVE: "Activo",
+  VERY_ACTIVE: "Muy Activo",
+}
+
+const GOAL_LABELS: Record<PatientFormValues["goal"], string> = {
+  FAT_LOSS: "Pérdida de grasa",
+  MUSCLE_GAIN: "Ganancia muscular",
+  BODY_RECOMPOSITION: "Recomposición corporal",
+  SPORTS_PERFORMANCE: "Rendimiento deportivo",
+  MAINTENANCE: "Mantenimiento",
+}
+
 export function PatientForm({ initialData, patientId }: PatientFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -104,7 +126,9 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
           <Label htmlFor="gender">Género</Label>
           <Select defaultValue={initialData?.gender || "MALE"} onValueChange={(val) => setValue("gender", val as PatientFormValues["gender"])}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecciona" />
+              <SelectValue placeholder="Selecciona">
+                {(value: PatientFormValues["gender"]) => GENDER_LABELS[value]}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="MALE">Masculino</SelectItem>
@@ -182,7 +206,9 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
             <Label htmlFor="activityLevel">Nivel de Actividad</Label>
             <Select defaultValue={initialData?.activityLevel || "SEDENTARY"} onValueChange={(val) => setValue("activityLevel", val as PatientFormValues["activityLevel"])}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>
+                  {(value: PatientFormValues["activityLevel"]) => ACTIVITY_LEVEL_LABELS[value]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="SEDENTARY">Sedentario</SelectItem>
@@ -197,7 +223,9 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
             <Label htmlFor="goal">Objetivo Principal</Label>
             <Select defaultValue={initialData?.goal || "FAT_LOSS"} onValueChange={(val) => setValue("goal", val as PatientFormValues["goal"])}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>
+                  {(value: PatientFormValues["goal"]) => GOAL_LABELS[value]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="FAT_LOSS">Pérdida de grasa</SelectItem>

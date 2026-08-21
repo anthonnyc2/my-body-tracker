@@ -1,0 +1,1 @@
+export const FREE_PLAN_EVALUATION_LIMIT = 10

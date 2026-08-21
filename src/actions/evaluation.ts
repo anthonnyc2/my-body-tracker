@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 import { EvaluationFormValues, evaluationSchema } from "@/types/evaluation"
-import { 
+import { FREE_PLAN_EVALUATION_LIMIT } from "@/lib/constants"
+import { getEffectivePlan } from "@/lib/subscription"
+import {
   calculateBMI, 
   calculateFatYuhasz, 
   calculateFatFaulkner,
@@ -37,6 +39,21 @@ export async function createEvaluation(data: EvaluationFormValues) {
 
   if (!patient || patient.evaluatorId !== user.id) {
     return { error: "Paciente no encontrado" }
+  }
+
+  const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } })
+
+  if (getEffectivePlan(subscription) === "FREE") {
+    const evaluationCount = await prisma.evaluation.count({
+      where: { patient: { evaluatorId: user.id } },
+    })
+
+    if (evaluationCount >= FREE_PLAN_EVALUATION_LIMIT) {
+      return {
+        error: `Has alcanzado el límite de ${FREE_PLAN_EVALUATION_LIMIT} evaluaciones del plan gratuito.`,
+        code: "FREE_LIMIT_REACHED" as const,
+      }
+    }
   }
 
   // Calculate decimal age based on evaluation date (not current date)

@@ -64,7 +64,7 @@ export default function PatientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {patients.map((patient: { id: string, documentId?: string, firstName: string, lastName: string, email?: string, phone?: string, birthDate: Date | string, goal: string, createdAt: Date | string, evaluations: { id: string, date: Date | string }[] }) => {
+              {patients.map((patient: { id: string, documentId?: string | null, firstName: string, lastName: string, email?: string | null, phone?: string | null, birthDate: Date | string, goal: string, createdAt: Date | string }) => {
                 const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
                 return (
                   <TableRow key={patient.id}>

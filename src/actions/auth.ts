@@ -63,19 +63,12 @@ export async function signupAction(formData: FormData) {
   if (data.user) {
     // Sincronización Inmediata con Prisma
     try {
-      const { prisma } = await import("@/lib/prisma")
-      await prisma.user.create({
-        data: {
-          id: data.user.id,
-          email: data.user.email!,
-          firstName: firstName,
-          lastName: lastName,
-          role: "EVALUATOR",
-        }
-      })
+      const { ensureUserRecord } = await import("@/lib/ensure-user")
+      await ensureUserRecord(data.user)
     } catch (dbError) {
-      console.error("Error al sincronizar con Prisma:", dbError)
-      // Opcional: Podríamos manejar qué pasa si falla Prisma pero no Auth
+      console.error(`Error al sincronizar usuario ${data.user.id} (${data.user.email}) con Prisma tras signup:`, dbError)
+      // No bloqueamos el redirect: el usuario ya tiene sesión válida en Supabase Auth.
+      // La fila en Prisma se autocorrige en el siguiente request al dashboard.
     }
   }
 

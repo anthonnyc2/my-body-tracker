@@ -7,13 +7,20 @@ import { es } from "date-fns/locale"
 import { Plus, Activity, User, Calendar, FileText } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { getEvaluations } from "@/actions/evaluation"
+import { getEvaluationUsage } from "@/actions/subscription"
 import { DeleteEvaluationButton } from "@/components/DeleteEvaluationButton"
 
 export default function EvaluationsPage() {
   const { data: evaluations, isLoading } = useQuery({
     queryKey: ["evaluations"],
     queryFn: () => getEvaluations(),
+  })
+
+  const { data: usage } = useQuery({
+    queryKey: ["evaluationUsage"],
+    queryFn: () => getEvaluationUsage(),
   })
 
   return (
@@ -25,11 +32,22 @@ export default function EvaluationsPage() {
             Historial de todas las evaluaciones realizadas.
           </p>
         </div>
-        <Link href="/dashboard/patients">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
-          </Button>
-        </Link>
+        {usage?.isAtLimit ? (
+          <Tooltip>
+            <TooltipTrigger render={<Button disabled />}>
+              <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
+            </TooltipTrigger>
+            <TooltipContent>
+              Límite de {usage.limit} evaluaciones del plan gratuito alcanzado
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <Link href="/dashboard/patients">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="rounded-xl border bg-card text-card-foreground shadow">
@@ -52,7 +70,7 @@ export default function EvaluationsPage() {
           </div>
         ) : (
           <div className="divide-y">
-            {evaluations.map((evaluation: { id: string, date: Date | string, weight: number, bodyFatPct?: number, patient: { firstName: string, lastName: string } }) => (
+            {evaluations.map((evaluation: { id: string, date: Date | string, weight: number, bodyFatPct?: number | null, patient: { firstName: string, lastName: string } }) => (
               <div 
                 key={evaluation.id} 
                 className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"

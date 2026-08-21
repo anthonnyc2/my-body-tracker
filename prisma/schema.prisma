@@ -34,6 +34,22 @@ enum Goal {
   MAINTENANCE
 }
 
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
+
 model User {
   id            String    @id @default(uuid()) // Links to Supabase Auth UUID
   email         String    @unique
@@ -45,8 +61,29 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relaciones
-  managedPatients Patient[] @relation("EvaluatorToPatient")
-  patientProfile  Patient?  @relation("UserToPatientProfile")
+  managedPatients Patient[]     @relation("EvaluatorToPatient")
+  patientProfile  Patient?      @relation("UserToPatientProfile")
+  subscription    Subscription?
+}
+
+model Subscription {
+  id                  String              @id @default(uuid())
+  userId              String              @unique
+  plan                SubscriptionPlan    @default(FREE)
+  status              SubscriptionStatus  @default(ACTIVE)
+  billingCycle        BillingCycle?
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+  cancelAtPeriodEnd   Boolean             @default(false)
+
+  // Placeholders for a future payment provider (e.g. Stripe) — unused until billing is built
+  providerCustomerId     String? @unique
+  providerSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Patient {

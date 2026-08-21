@@ -19,23 +19,9 @@ export async function createPatient(data: PatientFormValues) {
   }
 
   const { prisma } = await import("@/lib/prisma")
-  // Get evaluator user from prisma
-  const evaluatorUser = await prisma.user.findUnique({
-    where: { id: user.id }
-  })
-
+  const { ensureUserRecord } = await import("@/lib/ensure-user")
   // Ensure evaluator exists in Prisma, if not create it based on auth
-  if (!evaluatorUser) {
-    await prisma.user.create({
-      data: {
-        id: user.id,
-        email: user.email!,
-        firstName: user.user_metadata?.first_name || "Evaluador",
-        lastName: user.user_metadata?.last_name || "",
-        role: "EVALUATOR",
-      }
-    })
-  }
+  await ensureUserRecord(user)
 
   try {
     const patient = await prisma.patient.create({
