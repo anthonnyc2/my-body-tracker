@@ -135,7 +135,10 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
                 selected={birthDateValue}
                 onSelect={(d) => d && setValue("birthDate", d, { shouldValidate: true })}
                 locale={es}
-                defaultMonth={birthDateValue || new Date()}
+                defaultMonth={birthDateValue || new Date(new Date().getFullYear() - 25, 0)}
+                captionLayout="dropdown"
+                fromYear={1920}
+                toYear={new Date().getFullYear()}
               />
             </PopoverContent>
           </Popover>

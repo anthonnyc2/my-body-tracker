@@ -39,14 +39,16 @@ export async function createEvaluation(data: EvaluationFormValues) {
     return { error: "Paciente no encontrado" }
   }
 
-  // Calculate age
-  const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
+  // Calculate decimal age based on evaluation date (not current date)
+  const evaluationDate = parsed.data.date instanceof Date ? parsed.data.date : new Date(parsed.data.date)
+  const birthDate = new Date(patient.birthDate)
+  const decimalAge = (evaluationDate.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
 
   // Prepare measurements object for calculations
   const m: Measurements = {
     ...parsed.data,
     gender: patient.gender,
-    age,
+    age: decimalAge,
   }
 
   const bmi = calculateBMI(m.weight, m.height)
@@ -112,6 +114,7 @@ export async function createEvaluation(data: EvaluationFormValues) {
         skinfoldThigh: parsed.data.skinfoldThigh,
         skinfoldCalf: parsed.data.skinfoldCalf,
         
+        decimalAge,
         bmi,
         bodyFatPct,
         bodyFatKg,
@@ -158,14 +161,16 @@ export async function updateEvaluation(id: string, data: EvaluationFormValues) {
     return { error: "Evaluación no encontrada o sin permisos" }
   }
 
-  // Calculate age
-  const age = new Date().getFullYear() - new Date(existingEvaluation.patient.birthDate).getFullYear()
+  // Calculate decimal age based on evaluation date (not current date)
+  const evaluationDate = parsed.data.date instanceof Date ? parsed.data.date : new Date(parsed.data.date)
+  const birthDate = new Date(existingEvaluation.patient.birthDate)
+  const decimalAge = (evaluationDate.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
 
   // Prepare measurements object for calculations
   const m: Measurements = {
     ...parsed.data,
     gender: existingEvaluation.patient.gender,
-    age,
+    age: decimalAge,
   }
 
   const bmi = calculateBMI(m.weight, m.height)
@@ -231,6 +236,7 @@ export async function updateEvaluation(id: string, data: EvaluationFormValues) {
         skinfoldThigh: parsed.data.skinfoldThigh,
         skinfoldCalf: parsed.data.skinfoldCalf,
         
+        decimalAge,
         bmi,
         bodyFatPct,
         bodyFatKg,

@@ -129,14 +129,14 @@ export default function PatientDetailPage() {
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Peso: {evalRecord.weight} kg • Grasa: {evalRecord.bodyFatPct?.toFixed(1) || "-"}%
+                        Peso: {evaluation.weight} kg • Grasa: {evaluation.bodyFatPct?.toFixed(1) || "-"}%
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Link href={`/dashboard/evaluations/${evalRecord.id}`}>
+                      <Link href={`/dashboard/evaluations/${evaluation.id}`}>
                         <Button variant="outline" size="sm">Ver Reporte</Button>
                       </Link>
-                      <DeleteEvaluationButton id={evalRecord.id} variant="ghost" />
+                      <DeleteEvaluationButton id={evaluation.id} variant="ghost" />
                     </div>
                   </div>
                 ))}

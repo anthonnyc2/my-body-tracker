@@ -27,7 +27,7 @@ function DeltaIndicator({ current, previous, inverse = false }: { current: numbe
   )
 }
 
-function calculateEvaluationSumOf6(ev: Record<string, number | null | undefined>) {
+function calculateEvaluationSumOf6(ev: Record<string, unknown> | null | undefined) {
   if (!ev) return null
   const measurements = {
     skinfoldTriceps: ev.skinfoldTriceps ?? undefined,
@@ -41,7 +41,7 @@ function calculateEvaluationSumOf6(ev: Record<string, number | null | undefined>
 }
 
 interface Props {
-  currentEvaluation: Record<string, number | null | undefined>
+  currentEvaluation: { date: string | Date; [key: string]: unknown }
   history: { id: string; date: Date }[]
 }
 
@@ -140,34 +140,39 @@ export function EvaluationComparison({ currentEvaluation, history }: Props) {
         </div>
 
         <div className="divide-y divide-border">
-          {metrics.map((metric) => (
-            <div key={metric.key} className="grid grid-cols-3 divide-x divide-border hover:bg-muted/30 transition-colors">
-              <div className="p-4 flex items-center">
-                <span className="font-medium text-foreground">{metric.label}</span>
-              </div>
-              <div className="p-4 flex items-center justify-center">
-                {isLoading ? (
-                  <span className="text-muted-foreground animate-pulse">Cargando...</span>
-                ) : (
-                  <span className="text-lg font-semibold text-muted-foreground">
-                    {(prevEvaluation as Record<string, number | null | undefined>)?.[metric.key] ? (prevEvaluation as Record<string, number | null | undefined>)[metric.key].toFixed(1) : "-"}
+          {metrics.map((metric) => {
+            const currVal = (currentEvaluation as Record<string, unknown>)[metric.key] as number | null | undefined;
+            const prevVal = prevEvaluation ? (prevEvaluation as Record<string, unknown>)[metric.key] as number | null | undefined : null;
+
+            return (
+              <div key={metric.key} className="grid grid-cols-3 divide-x divide-border hover:bg-muted/30 transition-colors">
+                <div className="p-4 flex items-center">
+                  <span className="font-medium text-foreground">{metric.label}</span>
+                </div>
+                <div className="p-4 flex items-center justify-center">
+                  {isLoading ? (
+                    <span className="text-muted-foreground animate-pulse">Cargando...</span>
+                  ) : (
+                    <span className="text-lg font-semibold text-muted-foreground">
+                      {prevVal != null ? prevVal.toFixed(1) : "-"}
+                    </span>
+                  )}
+                </div>
+                <div className="p-4 flex items-center justify-between bg-primary/5">
+                  <span className="text-lg font-bold text-foreground">
+                    {currVal != null ? currVal.toFixed(1) : "-"}
                   </span>
-                )}
+                  {!isLoading && prevVal != null && currVal != null && (
+                    <DeltaIndicator 
+                      current={currVal} 
+                      previous={prevVal} 
+                      inverse={metric.inverse}
+                    />
+                  )}
+                </div>
               </div>
-              <div className="p-4 flex items-center justify-between bg-primary/5">
-                <span className="text-lg font-bold text-foreground">
-                  {(currentEvaluation as Record<string, number | null | undefined>)[metric.key] ? (currentEvaluation as Record<string, number | null | undefined>)[metric.key].toFixed(1) : "-"}
-                </span>
-                {!isLoading && (prevEvaluation as Record<string, number | null | undefined>)?.[metric.key] !== undefined && (currentEvaluation as Record<string, number | null | undefined>)[metric.key] !== undefined && (
-                  <DeltaIndicator 
-                    current={(currentEvaluation as Record<string, number | null | undefined>)[metric.key]} 
-                    previous={(prevEvaluation as Record<string, number | null | undefined>)[metric.key]} 
-                    inverse={metric.inverse}
-                  />
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Sum of 6 Skinfolds special row */}
           <div className="grid grid-cols-3 divide-x divide-border hover:bg-muted/30 transition-colors">

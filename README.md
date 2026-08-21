@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Body Tracker
 
-## Getting Started
+Sistema Web de Evaluación Física y Seguimiento Corporal para profesionales de la salud.
 
-First, run the development server:
+## Stack
+
+- **Framework**: Next.js 16.2.9 (App Router)
+- **UI**: React 19.2.4 + Tailwind CSS v4 + shadcn/ui (base-nova)
+- **Base de datos**: PostgreSQL + Prisma 7
+- **Auth**: Supabase Auth
+- **Validación**: Zod 4 + react-hook-form
+- **Gestor de paquetes**: pnpm
+
+## Requisitos
+
+- Node.js 24.13.1
+- pnpm
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Instalar dependencias
+pnpm install
+
+# Generar cliente Prisma
+pnpm prisma generate
+
+# Aplicar migraciones
+pnpm prisma migrate dev
+
+# Iniciar servidor de desarrollo
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev      # Servidor de desarrollo
+pnpm build    # Build de producción
+pnpm start    # Servidor de producción
+pnpm lint     # ESLint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Estructura
 
-## Learn More
+- `src/app/(auth)/` — Rutas de autenticación (login, registro)
+- `src/app/(dashboard)/` — Panel de control protegido
+- `src/actions/` — Server actions
+- `src/components/` — Componentes UI y de negocio
+- `src/lib/` — Utilidades, cliente Prisma, Supabase
+- `prisma/schema.prisma` — Esquema de base de datos
 
-To learn more about Next.js, take a look at the following resources:
+## Desarrollo local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+El proyecto usa Supabase y Postgres en localhost:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Supabase: `127.0.0.1:54331`
+- Postgres: `127.0.0.1:54332`
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Configura las variables de entorno en `.env` si necesitas cambiarlas.
