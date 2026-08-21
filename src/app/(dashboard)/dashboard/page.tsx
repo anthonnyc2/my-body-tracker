@@ -64,8 +64,8 @@ export default async function DashboardPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Bienvenido, {firstName}
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Bienvenido, <span className="text-primary">{firstName}</span>
           </h1>
           <p className="text-muted-foreground mt-1 text-lg">
             Monitorea el progreso y la evolución de tus pacientes.
