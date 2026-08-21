@@ -15,6 +15,7 @@ import { es } from "date-fns/locale"
 
 import { EvolutionChart } from "@/components/charts/EvolutionChart"
 import { DeleteEvaluationButton } from "@/components/DeleteEvaluationButton"
+import { DeletePatientButton } from "@/components/DeletePatientButton"
 
 export default function PatientDetailPage() {
   const params = useParams()
@@ -72,6 +73,11 @@ export default function PatientDetailPage() {
               <Pencil className="mr-2 h-4 w-4" /> Editar Paciente
             </Button>
           </Link>
+          <DeletePatientButton
+            id={patient.id}
+            patientName={`${patient.firstName} ${patient.lastName}`}
+            redirectUrl="/dashboard/patients"
+          />
           {usage?.isAtLimit ? (
             <Tooltip>
               <TooltipTrigger render={<Button disabled />}>

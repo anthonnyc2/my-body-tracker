@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { getPatients } from "@/actions/patient"
+import { DeletePatientButton } from "@/components/DeletePatientButton"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -81,11 +82,18 @@ export default function PatientsPage() {
                     </TableCell>
                     <TableCell>{format(new Date(patient.createdAt), "dd MMM yyyy", { locale: es })}</TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/dashboard/patients/${patient.id}`}>
-                        <Button variant="ghost" size="sm">
-                          Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <div className="flex justify-end gap-2">
+                        <Link href={`/dashboard/patients/${patient.id}`}>
+                          <Button variant="ghost" size="sm">
+                            Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <DeletePatientButton
+                          id={patient.id}
+                          patientName={`${patient.firstName} ${patient.lastName}`}
+                          variant="ghost"
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 )

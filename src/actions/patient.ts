@@ -84,6 +84,37 @@ export async function getPatientById(id: string) {
   return patient
 }
 
+export async function deletePatient(id: string) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { error: "No autorizado" }
+  }
+
+  const { prisma } = await import("@/lib/prisma")
+
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: { id }
+    })
+
+    if (!patient || patient.evaluatorId !== user.id) {
+      return { error: "Paciente no encontrado o sin permisos" }
+    }
+
+    await prisma.patient.delete({
+      where: { id }
+    })
+
+    revalidatePath("/dashboard/patients")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting patient:", error)
+    return { error: "Error al eliminar paciente. Inténtalo de nuevo." }
+  }
+}
+
 export async function updatePatient(id: string, data: PatientFormValues) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
