@@ -92,7 +92,7 @@ export default async function DashboardPage() {
         <KPICard
           title="Evaluaciones Totales"
           value={String(totalEvaluations)}
-          icon={<Activity className="h-5 w-5 text-secondary" />}
+          icon={<Activity className="h-5 w-5 text-primary" />}
           trend={`+${evaluationsThisMonth} este mes`}
         />
         <KPICard
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
         <KPICard
           title="Casos de Éxito"
           value={String(successCases)}
-          icon={<TrendingUp className="h-5 w-5 text-secondary" />}
+          icon={<TrendingUp className="h-5 w-5 text-primary" />}
           trend="Metas alcanzadas"
         />
       </div>
@@ -135,13 +135,10 @@ export default async function DashboardPage() {
 
 function KPICard({ title, value, icon, trend }: { title: string, value: string, icon: React.ReactNode, trend: string }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
-      <div className="absolute -right-4 -top-4 opacity-10 blur-xl scale-150 transition-transform group-hover:scale-200">
-        {icon}
-      </div>
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow duration-300 hover:shadow-md">
       <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="tracking-tight text-sm font-medium text-muted-foreground">{title}</h3>
-        <div className="p-2 bg-background/80 rounded-lg shadow-sm border border-border/40">
+        <p className="tracking-tight text-sm font-medium text-muted-foreground">{title}</p>
+        <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
           {icon}
         </div>
       </div>
