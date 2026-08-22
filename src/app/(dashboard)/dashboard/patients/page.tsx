@@ -18,6 +18,26 @@ import { DeletePatientButton } from "@/components/DeletePatientButton"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
+const GOAL_LABELS: Record<string, string> = {
+  FAT_LOSS: "Pérdida de Grasa",
+  MUSCLE_GAIN: "Ganancia Muscular",
+  BODY_RECOMPOSITION: "Recomposición",
+  SPORTS_PERFORMANCE: "Rendimiento",
+  MAINTENANCE: "Mantenimiento",
+}
+
+type PatientRow = {
+  id: string
+  documentId?: string | null
+  firstName: string
+  lastName: string
+  email?: string | null
+  phone?: string | null
+  birthDate: Date | string
+  goal: string
+  createdAt: Date | string
+}
+
 export default function PatientsPage() {
   const { data: patients, isLoading, error } = useQuery({
     queryKey: ["patients"],
@@ -54,52 +74,79 @@ export default function PatientsPage() {
             </Link>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre Completo</TableHead>
-                <TableHead>Edad</TableHead>
-                <TableHead>Objetivo</TableHead>
-                <TableHead>Registro</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {patients.map((patient: { id: string, documentId?: string | null, firstName: string, lastName: string, email?: string | null, phone?: string | null, birthDate: Date | string, goal: string, createdAt: Date | string }) => {
+          <>
+            {/* Mobile: card list. The table below is unreadable and overflows below md. */}
+            <div className="divide-y lg:hidden">
+              {(patients as PatientRow[]).map((patient) => {
                 const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
                 return (
-                  <TableRow key={patient.id}>
-                    <TableCell className="font-medium">
-                      {patient.firstName} {patient.lastName}
-                    </TableCell>
-                    <TableCell>{age} años</TableCell>
-                    <TableCell>
-                      {patient.goal === "FAT_LOSS" && "Pérdida de Grasa"}
-                      {patient.goal === "MUSCLE_GAIN" && "Ganancia Muscular"}
-                      {patient.goal === "BODY_RECOMPOSITION" && "Recomposición"}
-                      {patient.goal === "SPORTS_PERFORMANCE" && "Rendimiento"}
-                      {patient.goal === "MAINTENANCE" && "Mantenimiento"}
-                    </TableCell>
-                    <TableCell>{format(new Date(patient.createdAt), "dd MMM yyyy", { locale: es })}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/dashboard/patients/${patient.id}`}>
-                          <Button variant="ghost" size="sm">
-                            Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <DeletePatientButton
-                          id={patient.id}
-                          patientName={`${patient.firstName} ${patient.lastName}`}
-                          variant="ghost"
-                        />
+                  <div key={patient.id} className="flex flex-col gap-3 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{patient.firstName} {patient.lastName}</p>
+                        <p className="text-sm text-muted-foreground">{age} años · {GOAL_LABELS[patient.goal]}</p>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                      <DeletePatientButton
+                        id={patient.id}
+                        patientName={`${patient.firstName} ${patient.lastName}`}
+                        variant="ghost"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Registrado el {format(new Date(patient.createdAt), "dd MMM yyyy", { locale: es })}
+                    </p>
+                    <Link href={`/dashboard/patients/${patient.id}`}>
+                      <Button variant="outline" className="w-full">
+                        Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 )
               })}
-            </TableBody>
-          </Table>
+            </div>
+
+            {/* Desktop/tablet: table */}
+            <Table className="hidden lg:table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre Completo</TableHead>
+                  <TableHead>Edad</TableHead>
+                  <TableHead>Objetivo</TableHead>
+                  <TableHead>Registro</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(patients as PatientRow[]).map((patient) => {
+                  const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
+                  return (
+                    <TableRow key={patient.id}>
+                      <TableCell className="font-medium">
+                        {patient.firstName} {patient.lastName}
+                      </TableCell>
+                      <TableCell>{age} años</TableCell>
+                      <TableCell>{GOAL_LABELS[patient.goal]}</TableCell>
+                      <TableCell>{format(new Date(patient.createdAt), "dd MMM yyyy", { locale: es })}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Link href={`/dashboard/patients/${patient.id}`}>
+                            <Button variant="ghost" size="sm">
+                              Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <DeletePatientButton
+                            id={patient.id}
+                            patientName={`${patient.firstName} ${patient.lastName}`}
+                            variant="ghost"
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </>
         )}
       </div>
     </div>
