@@ -58,16 +58,18 @@ export default function PatientDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/patients">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {patient.firstName} {patient.lastName}
-        </h1>
-        <div className="ml-auto flex gap-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard/patients">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {patient.firstName} {patient.lastName}
+          </h1>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:ml-auto">
           <Link href={`/dashboard/patients/${patient.id}/edit`}>
             <Button variant="outline">
               <Pencil className="mr-2 h-4 w-4" /> Editar Paciente
