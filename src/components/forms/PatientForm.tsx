@@ -90,21 +90,21 @@ export function PatientForm({ initialData, patientId }: PatientFormProps) {
 
   async function onSubmit(data: PatientFormValues) {
     setIsSubmitting(true)
-    let result
-    
-    if (patientId) {
-      result = await updatePatient(patientId, data)
-    } else {
-      result = await createPatient(data)
-    }
-    
-    setIsSubmitting(false)
+    try {
+      const result = patientId
+        ? await updatePatient(patientId, data)
+        : await createPatient(data)
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success(patientId ? "Paciente actualizado" : "Paciente registrado correctamente")
-      router.push(`/dashboard/patients/${result.patientId}`)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success(patientId ? "Paciente actualizado" : "Paciente registrado correctamente")
+        router.push(`/dashboard/patients/${result.patientId}`)
+      }
+    } catch {
+      toast.error("No se pudo conectar con el servidor. Intenta nuevamente.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

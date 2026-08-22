@@ -105,16 +105,21 @@ export function EvaluationForm({
 
   const onSubmit = async (data: EvaluationFormValues) => {
     setIsSubmitting(true)
-    const result = evaluationId 
-      ? await updateEvaluation(evaluationId, data)
-      : await createEvaluation(data)
-    setIsSubmitting(false)
+    try {
+      const result = evaluationId
+        ? await updateEvaluation(evaluationId, data)
+        : await createEvaluation(data)
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success(evaluationId ? "Evaluación actualizada exitosamente" : "Evaluación guardada y calculada exitosamente")
-      router.push(`/dashboard/evaluations/${result.evaluationId}`)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success(evaluationId ? "Evaluación actualizada exitosamente" : "Evaluación guardada y calculada exitosamente")
+        router.push(`/dashboard/evaluations/${result.evaluationId}`)
+      }
+    } catch {
+      toast.error("No se pudo conectar con el servidor. Intenta nuevamente.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
