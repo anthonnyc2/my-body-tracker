@@ -33,11 +33,17 @@ const navItems = [
   },
 ]
 
-export function Sidebar({ className }: { className?: string }) {
+export function Sidebar({
+  className,
+  onNavigate,
+}: {
+  className?: string
+  onNavigate?: () => void
+}) {
   const pathname = usePathname()
 
   return (
-    <div className={cn("flex h-screen flex-col border-r border-border/40 bg-background/60 backdrop-blur-xl", className)}>
+    <div className={cn("flex h-full flex-col border-r border-border/40 bg-background/60 backdrop-blur-xl", className)}>
       <div className="flex h-14 items-center border-b border-border/40 px-4 lg:h-[70px] lg:px-6">
         <Link href="/" className="flex items-center gap-3 font-semibold transition-opacity hover:opacity-80">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20">
@@ -57,6 +63,7 @@ export function Sidebar({ className }: { className?: string }) {
               <Link
                 key={index}
                 href={item.href}
+                onClick={onNavigate}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300",
                   isActive 
