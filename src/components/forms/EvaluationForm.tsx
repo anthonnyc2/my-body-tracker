@@ -151,10 +151,10 @@ export function EvaluationForm({
     <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 max-w-4xl">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="basico">Básico</TabsTrigger>
-          <TabsTrigger value="perimetros">Perímetros</TabsTrigger>
-          <TabsTrigger value="diametros">Diámetros</TabsTrigger>
-          <TabsTrigger value="pliegues">Pliegues</TabsTrigger>
+          <TabsTrigger value="basico" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Básico</TabsTrigger>
+          <TabsTrigger value="perimetros" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Perímetros</TabsTrigger>
+          <TabsTrigger value="diametros" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Diámetros</TabsTrigger>
+          <TabsTrigger value="pliegues" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Pliegues</TabsTrigger>
         </TabsList>
         
         {/* BASICO */}
