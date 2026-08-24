@@ -79,6 +79,7 @@ export default function PatientDetailPage() {
             id={patient.id}
             patientName={`${patient.firstName} ${patient.lastName}`}
             redirectUrl="/dashboard/patients"
+            label="Eliminar Paciente"
           />
           {usage?.isAtLimit ? (
             <Tooltip>

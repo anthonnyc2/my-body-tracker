@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { Trash2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -21,7 +22,9 @@ import { deleteEvaluation } from "@/actions/evaluation"
 
 export function DeleteEvaluationButton({ id, redirectUrl, variant = "outline" }: { id: string, redirectUrl?: string, variant?: "outline" | "ghost" | "destructive" | "default" }) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [open, setOpen] = useState(false)
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -32,6 +35,8 @@ export function DeleteEvaluationButton({ id, redirectUrl, variant = "outline" }:
       toast.error(result.error)
     } else {
       toast.success("Evaluación eliminada correctamente")
+      setOpen(false)
+      await queryClient.invalidateQueries()
       if (redirectUrl) {
         router.push(redirectUrl)
       } else {
@@ -41,7 +46,7 @@ export function DeleteEvaluationButton({ id, redirectUrl, variant = "outline" }:
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
         render={
           <Button variant={variant} size="icon" className="w-10 h-10 shrink-0 text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/20">

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { Trash2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -19,9 +20,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deletePatient } from "@/actions/patient"
 
-export function DeletePatientButton({ id, patientName, redirectUrl, variant = "outline" }: { id: string, patientName: string, redirectUrl?: string, variant?: "outline" | "ghost" | "destructive" | "default" }) {
+export function DeletePatientButton({ id, patientName, redirectUrl, variant = "outline", label }: { id: string, patientName: string, redirectUrl?: string, variant?: "outline" | "ghost" | "destructive" | "default", label?: string }) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [open, setOpen] = useState(false)
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -32,6 +35,8 @@ export function DeletePatientButton({ id, patientName, redirectUrl, variant = "o
       toast.error(result.error)
     } else {
       toast.success("Paciente eliminado correctamente")
+      setOpen(false)
+      await queryClient.invalidateQueries()
       if (redirectUrl) {
         router.push(redirectUrl)
       } else {
@@ -41,13 +46,20 @@ export function DeletePatientButton({ id, patientName, redirectUrl, variant = "o
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
         render={
-          <Button variant={variant} size="icon" className="w-10 h-10 shrink-0 text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/20">
-            <Trash2 className="h-4 w-4" />
-            <span className="sr-only">Eliminar paciente</span>
-          </Button>
+          label ? (
+            <Button variant={variant} className="shrink-0 text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/20">
+              <Trash2 className="mr-2 h-4 w-4" />
+              {label}
+            </Button>
+          ) : (
+            <Button variant={variant} size="icon" className="w-10 h-10 shrink-0 text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/20">
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Eliminar paciente</span>
+            </Button>
+          )
         }
       />
       <AlertDialogContent>
