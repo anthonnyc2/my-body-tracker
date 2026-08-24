@@ -42,11 +42,8 @@ export default async function SharePage({ params }: Props) {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">
           <BackButton />
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-              Reporte de Evaluación
-            </div>
-            <p className="text-muted-foreground text-sm">Evaluador: {evaluatorName}</p>
+          <div className="text-xs text-muted-foreground uppercase tracking-widest">
+            Reporte de Evaluación
           </div>
         </div>
 
@@ -55,6 +52,7 @@ export default async function SharePage({ params }: Props) {
           previous={previous}
           patient={patient}
           historyEvaluationsFull={siblingEvaluations}
+          evaluatorName={evaluatorName}
           readOnly
         />
 

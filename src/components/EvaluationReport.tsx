@@ -76,6 +76,8 @@ interface EvaluationReportProps {
   historyEvaluationsFull?: Evaluation[]
   /** Hides editing affordances (goals/recommendations) for unauthenticated public views. */
   readOnly?: boolean
+  /** Evaluator's display name, e.g. for the public share page. */
+  evaluatorName?: string
 }
 
 export function EvaluationReport({
@@ -85,6 +87,7 @@ export function EvaluationReport({
   historyForComparison,
   historyEvaluationsFull,
   readOnly = false,
+  evaluatorName,
 }: EvaluationReportProps) {
   const isSimple = current.type === "SIMPLE"
 
@@ -192,7 +195,7 @@ export function EvaluationReport({
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Objetivo: {GOAL_LABELS[patient.goal]}</p>
-          <p className="text-sm font-medium">Dr/a. Evaluador</p>
+          <p className="text-sm font-medium">{evaluatorName || "Dr/a. Evaluador"}</p>
         </div>
       </div>
 
