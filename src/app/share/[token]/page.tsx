@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { EvaluationReport } from "@/components/EvaluationReport"
+import { BackButton } from "@/components/shared/BackButton"
 
 interface Props {
   params: Promise<{ token: string }>
@@ -39,11 +40,14 @@ export default async function SharePage({ params }: Props) {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <div className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-            Reporte de Evaluación
+        <div className="mb-6 flex items-center gap-4">
+          <BackButton />
+          <div>
+            <div className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
+              Reporte de Evaluación
+            </div>
+            <p className="text-muted-foreground text-sm">Evaluador: {evaluatorName}</p>
           </div>
-          <p className="text-muted-foreground text-sm">Evaluador: {evaluatorName}</p>
         </div>
 
         <EvaluationReport
