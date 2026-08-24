@@ -46,7 +46,8 @@ export function EvaluationForm({
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("basico")
-  
+  const [evalType, setEvalType] = useState<"FULL" | "SIMPLE">(initialData?.type === "SIMPLE" ? "SIMPLE" : "FULL")
+
   const parseUTCDate = (dateVal: Date | string | undefined) => {
     if (!dateVal) return undefined
     const d = new Date(dateVal)
@@ -64,10 +65,12 @@ export function EvaluationForm({
     defaultValues: initialData ? {
       ...initialData,
       date: initialData.date ? parseUTCDate(initialData.date) : new Date(),
-      patientId
+      patientId,
+      type: initialData.type === "SIMPLE" ? "SIMPLE" : "FULL"
     } : {
       patientId,
       date: new Date(),
+      type: "FULL",
       weight: initialWeight,
       height: initialHeight,
       breadthHumerus: initialBreadths?.breadthHumerus || undefined,
@@ -127,6 +130,14 @@ export function EvaluationForm({
     setActiveTab(nextTab)
   }
 
+  const handleTypeChange = (type: "FULL" | "SIMPLE") => {
+    setEvalType(type)
+    setValue("type", type)
+    if (type === "SIMPLE" && activeTab === "pliegues") {
+      setActiveTab("diametros")
+    }
+  }
+
   const onError = (errors: FieldErrors<EvaluationFormInput>) => {
     toast.error("Por favor revisa los campos marcados en rojo")
     if (errors.weight || errors.height || errors.date) {
@@ -150,15 +161,47 @@ export function EvaluationForm({
   return (
     <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 max-w-4xl">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className={cn("grid w-full", evalType === "SIMPLE" ? "grid-cols-3" : "grid-cols-4")}>
           <TabsTrigger value="basico" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Básico</TabsTrigger>
           <TabsTrigger value="perimetros" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Perímetros</TabsTrigger>
           <TabsTrigger value="diametros" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Diámetros</TabsTrigger>
-          <TabsTrigger value="pliegues" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Pliegues</TabsTrigger>
+          {evalType === "FULL" && (
+            <TabsTrigger value="pliegues" className="min-w-0 truncate px-1 text-xs sm:px-1.5 sm:text-sm">Pliegues</TabsTrigger>
+          )}
         </TabsList>
-        
+
         {/* BASICO */}
         <TabsContent value="basico" className="p-4 border rounded-md mt-4 space-y-4 bg-card text-card-foreground shadow-sm">
+          <div className="space-y-2">
+            <Label>Tipo de Evaluación</Label>
+            {evaluationId ? (
+              <p className="text-sm text-muted-foreground">
+                {evalType === "SIMPLE" ? "Simple (sin pliegues cutáneos)" : "Completa"}
+              </p>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={evalType === "FULL" ? "default" : "outline"}
+                  onClick={() => handleTypeChange("FULL")}
+                >
+                  Completa
+                </Button>
+                <Button
+                  type="button"
+                  variant={evalType === "SIMPLE" ? "default" : "outline"}
+                  onClick={() => handleTypeChange("SIMPLE")}
+                >
+                  Simple
+                </Button>
+              </div>
+            )}
+            {evalType === "SIMPLE" && !evaluationId && (
+              <p className="text-xs text-muted-foreground">
+                No incluye la sección de Pliegues. No se calcularán grasa corporal, masa muscular ni somatotipo — sirve para comparar peso, IMC y perímetros con evaluaciones anteriores.
+              </p>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Fecha de Evaluación</Label>
@@ -256,53 +299,62 @@ export function EvaluationForm({
           </div>
           <div className="flex justify-between pt-4">
             <Button type="button" variant="outline" onClick={() => handleNext("perimetros")}>Atrás</Button>
-            <Button type="button" onClick={() => handleNext("pliegues")}>Siguiente: Pliegues</Button>
+            {evalType === "SIMPLE" ? (
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {evaluationId ? "Actualizar Evaluación" : "Guardar y Calcular"}
+              </Button>
+            ) : (
+              <Button type="button" onClick={() => handleNext("pliegues")}>Siguiente: Pliegues</Button>
+            )}
           </div>
         </TabsContent>
 
         {/* PLIEGUES */}
-        <TabsContent value="pliegues" className="p-4 border rounded-md mt-4 space-y-4 bg-card text-card-foreground shadow-sm">
-          <Accordion defaultValue={["tronco"]} className="w-full">
-            <AccordionItem value="tronco" className="border-b-0 mb-2 border rounded-lg px-4 bg-muted/30">
-              <AccordionTrigger className="text-lg font-semibold hover:no-underline">Tronco</AccordionTrigger>
-              <AccordionContent className="pt-2 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-1">
-                  {renderMeasurement("skinfoldSubscap", "Subescapular (mm)", "Se toma en el ángulo inferior de la escápula en dirección diagonal a 45°.", "/images/anatomy/skinfold_trunk.png", true)}
-                  {renderMeasurement("skinfoldIliac", "Cresta Ilíaca (mm)", "Pliegue horizontal tomado justo por encima de la cresta ilíaca.", "/images/anatomy/skinfold_trunk.png")}
-                  {renderMeasurement("skinfoldSuprasp", "Supraespinal (mm)", "Pliegue diagonal medido en la intersección del borde del ilion y la línea axilar anterior.", "/images/anatomy/skinfold_trunk.png", true)}
-                  {renderMeasurement("skinfoldAbdom", "Abdominal (mm)", "Pliegue vertical tomado a 5 cm a la derecha del ombligo.", "/images/anatomy/skinfold_trunk.png", true)}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="superior" className="border-b-0 mb-2 border rounded-lg px-4 bg-muted/30">
-              <AccordionTrigger className="text-lg font-semibold hover:no-underline">Miembro Superior</AccordionTrigger>
-              <AccordionContent className="pt-2 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-1">
-                  {renderMeasurement("skinfoldTriceps", "Tríceps (mm)", "Pliegue vertical paralelo al eje longitudinal del brazo, en la parte posterior.", "/images/anatomy/skinfold_arm.png", true)}
-                  {renderMeasurement("skinfoldBiceps", "Bíceps (mm)", "Pliegue vertical en la cara anterior del brazo, en la marca del bíceps.", "/images/anatomy/skinfold_arm.png")}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+        {evalType === "FULL" && (
+          <TabsContent value="pliegues" className="p-4 border rounded-md mt-4 space-y-4 bg-card text-card-foreground shadow-sm">
+            <Accordion defaultValue={["tronco"]} className="w-full">
+              <AccordionItem value="tronco" className="border-b-0 mb-2 border rounded-lg px-4 bg-muted/30">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">Tronco</AccordionTrigger>
+                <AccordionContent className="pt-2 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-1">
+                    {renderMeasurement("skinfoldSubscap", "Subescapular (mm)", "Se toma en el ángulo inferior de la escápula en dirección diagonal a 45°.", "/images/anatomy/skinfold_trunk.png", true)}
+                    {renderMeasurement("skinfoldIliac", "Cresta Ilíaca (mm)", "Pliegue horizontal tomado justo por encima de la cresta ilíaca.", "/images/anatomy/skinfold_trunk.png")}
+                    {renderMeasurement("skinfoldSuprasp", "Supraespinal (mm)", "Pliegue diagonal medido en la intersección del borde del ilion y la línea axilar anterior.", "/images/anatomy/skinfold_trunk.png", true)}
+                    {renderMeasurement("skinfoldAbdom", "Abdominal (mm)", "Pliegue vertical tomado a 5 cm a la derecha del ombligo.", "/images/anatomy/skinfold_trunk.png", true)}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="inferior" className="border-b-0 border rounded-lg px-4 bg-muted/30">
-              <AccordionTrigger className="text-lg font-semibold hover:no-underline">Miembro Inferior</AccordionTrigger>
-              <AccordionContent className="pt-2 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-1">
-                  {renderMeasurement("skinfoldThigh", "Muslo Anterior (mm)", "Pliegue vertical en el punto medio del muslo anterior.", "/images/anatomy/skinfold_leg.png", true)}
-                  {renderMeasurement("skinfoldCalf", "Pantorrilla (mm)", "Pliegue vertical en la cara medial de la pantorrilla, al nivel de su máxima circunferencia.", "/images/anatomy/skinfold_leg.png", true)}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-          <div className="flex justify-between pt-4 border-t mt-6">
-            <Button type="button" variant="outline" onClick={() => handleNext("diametros")}>Atrás</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {evaluationId ? "Actualizar Evaluación" : "Guardar y Calcular"}
-            </Button>
-          </div>
-        </TabsContent>
+              <AccordionItem value="superior" className="border-b-0 mb-2 border rounded-lg px-4 bg-muted/30">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">Miembro Superior</AccordionTrigger>
+                <AccordionContent className="pt-2 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-1">
+                    {renderMeasurement("skinfoldTriceps", "Tríceps (mm)", "Pliegue vertical paralelo al eje longitudinal del brazo, en la parte posterior.", "/images/anatomy/skinfold_arm.png", true)}
+                    {renderMeasurement("skinfoldBiceps", "Bíceps (mm)", "Pliegue vertical en la cara anterior del brazo, en la marca del bíceps.", "/images/anatomy/skinfold_arm.png")}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="inferior" className="border-b-0 border rounded-lg px-4 bg-muted/30">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">Miembro Inferior</AccordionTrigger>
+                <AccordionContent className="pt-2 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-1">
+                    {renderMeasurement("skinfoldThigh", "Muslo Anterior (mm)", "Pliegue vertical en el punto medio del muslo anterior.", "/images/anatomy/skinfold_leg.png", true)}
+                    {renderMeasurement("skinfoldCalf", "Pantorrilla (mm)", "Pliegue vertical en la cara medial de la pantorrilla, al nivel de su máxima circunferencia.", "/images/anatomy/skinfold_leg.png", true)}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+            <div className="flex justify-between pt-4 border-t mt-6">
+              <Button type="button" variant="outline" onClick={() => handleNext("diametros")}>Atrás</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {evaluationId ? "Actualizar Evaluación" : "Guardar y Calcular"}
+              </Button>
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
     </form>
   )

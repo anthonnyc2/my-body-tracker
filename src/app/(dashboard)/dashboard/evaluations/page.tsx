@@ -73,7 +73,7 @@ export default function EvaluationsPage() {
           </div>
         ) : (
           <div className="divide-y">
-            {evaluations.map((evaluation: { id: string, date: Date | string, weight: number, bodyFatPct?: number | null, patient: { firstName: string, lastName: string } }) => (
+            {evaluations.map((evaluation: { id: string, date: Date | string, type: string, weight: number, bodyFatPct?: number | null, patient: { firstName: string, lastName: string } }) => (
               <div 
                 key={evaluation.id} 
                 className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
@@ -96,11 +96,16 @@ export default function EvaluationsPage() {
                       <Calendar className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Fecha</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">Fecha</p>
+                        <span className={`text-[10px] font-bold py-0.5 px-1.5 rounded-full ${evaluation.type === "SIMPLE" ? "bg-amber-500/10 text-amber-700" : "bg-emerald-500/10 text-emerald-700"}`}>
+                          {evaluation.type === "SIMPLE" ? "Simple" : "Completa"}
+                        </span>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {format(
-                          new Date(new Date(evaluation.date).getUTCFullYear(), new Date(evaluation.date).getUTCMonth(), new Date(evaluation.date).getUTCDate()), 
-                          "dd MMMM yyyy", 
+                          new Date(new Date(evaluation.date).getUTCFullYear(), new Date(evaluation.date).getUTCMonth(), new Date(evaluation.date).getUTCDate()),
+                          "dd MMMM yyyy",
                           { locale: es }
                         )}
                       </p>

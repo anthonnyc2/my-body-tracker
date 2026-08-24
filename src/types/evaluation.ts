@@ -23,7 +23,8 @@ const optionalPercentage = z.preprocess(
 export const evaluationSchema = z.object({
   patientId: z.string().uuid(),
   date: z.date(),
-  
+  type: z.enum(["FULL", "SIMPLE"]).default("FULL"),
+
   // Basic
   weight: z.coerce.number().min(20, "Peso inválido").max(400, "Valor irreal (máx 400kg)"),
   height: z.coerce.number().min(50, "Altura inválida").max(300, "Valor irreal (máx 300cm)"),

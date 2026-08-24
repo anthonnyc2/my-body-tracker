@@ -42,7 +42,7 @@ function calculateEvaluationSumOf6(ev: Record<string, unknown> | null | undefine
 
 interface Props {
   currentEvaluation: { date: string | Date; [key: string]: unknown }
-  history: { id: string; date: Date }[]
+  history: { id: string; date: Date; type?: string }[]
 }
 
 export function EvaluationComparison({ currentEvaluation, history }: Props) {
@@ -58,24 +58,28 @@ export function EvaluationComparison({ currentEvaluation, history }: Props) {
 
   if (!history.length) return null
 
-  const metrics = [
-    { label: "Peso (kg)", key: "weight", inverse: true }, 
+  const isEitherSimple = currentEvaluation.type === "SIMPLE" || prevEvaluation?.type === "SIMPLE"
+
+  const allMetrics = [
+    { label: "Peso (kg)", key: "weight", inverse: true },
     { label: "Índice de Masa Corporal", key: "bmi", inverse: true },
-    { label: "% Grasa Corporal", key: "bodyFatPct", inverse: true },
-    { label: "Masa Muscular (kg)", key: "muscleMassKg", inverse: false },
+    { label: "% Grasa Corporal", key: "bodyFatPct", inverse: true, skinfoldDependent: true },
+    { label: "Masa Muscular (kg)", key: "muscleMassKg", inverse: false, skinfoldDependent: true },
     { label: "Perímetro Tórax (cm)", key: "girthThorax", inverse: false },
     { label: "Perímetro Brazo Contraído (cm)", key: "girthFlexedArm", inverse: false },
     { label: "Perímetro Cintura (cm)", key: "girthWaist", inverse: true },
     { label: "Perímetro Cadera (cm)", key: "girthHip", inverse: true },
     { label: "Perímetro Muslo Frontal (cm)", key: "girthThigh", inverse: false },
     { label: "Perímetro Pantorrilla (cm)", key: "girthCalf", inverse: false },
-    { label: "Pliegue Tríceps (mm)", key: "skinfoldTriceps", inverse: true },
-    { label: "Pliegue Subescapular (mm)", key: "skinfoldSubscap", inverse: true },
-    { label: "Pliegue Supraespinal (mm)", key: "skinfoldSuprasp", inverse: true },
-    { label: "Pliegue Abdominal (mm)", key: "skinfoldAbdom", inverse: true },
-    { label: "Pliegue Muslo Frontal (mm)", key: "skinfoldThigh", inverse: true },
-    { label: "Pliegue Pantorrilla (mm)", key: "skinfoldCalf", inverse: true },
+    { label: "Pliegue Tríceps (mm)", key: "skinfoldTriceps", inverse: true, skinfoldDependent: true },
+    { label: "Pliegue Subescapular (mm)", key: "skinfoldSubscap", inverse: true, skinfoldDependent: true },
+    { label: "Pliegue Supraespinal (mm)", key: "skinfoldSuprasp", inverse: true, skinfoldDependent: true },
+    { label: "Pliegue Abdominal (mm)", key: "skinfoldAbdom", inverse: true, skinfoldDependent: true },
+    { label: "Pliegue Muslo Frontal (mm)", key: "skinfoldThigh", inverse: true, skinfoldDependent: true },
+    { label: "Pliegue Pantorrilla (mm)", key: "skinfoldCalf", inverse: true, skinfoldDependent: true },
   ]
+
+  const metrics = isEitherSimple ? allMetrics.filter((m) => !m.skinfoldDependent) : allMetrics
 
   const currentSumOf6 = calculateEvaluationSumOf6(currentEvaluation)
   const prevSumOf6 = calculateEvaluationSumOf6(prevEvaluation)
@@ -175,32 +179,34 @@ export function EvaluationComparison({ currentEvaluation, history }: Props) {
           })}
 
           {/* Sum of 6 Skinfolds special row */}
-          <div className="grid grid-cols-3 divide-x divide-border hover:bg-muted/30 transition-colors">
-            <div className="p-4 flex items-center">
-              <span className="font-medium text-foreground">Sumatoria 6 Pliegues (mm)</span>
-            </div>
-            <div className="p-4 flex items-center justify-center">
-              {isLoading ? (
-                <span className="text-muted-foreground animate-pulse">Cargando...</span>
-              ) : (
-                <span className="text-lg font-semibold text-muted-foreground">
-                  {prevSumOf6 ? prevSumOf6.toFixed(1) : "-"}
+          {!isEitherSimple && (
+            <div className="grid grid-cols-3 divide-x divide-border hover:bg-muted/30 transition-colors">
+              <div className="p-4 flex items-center">
+                <span className="font-medium text-foreground">Sumatoria 6 Pliegues (mm)</span>
+              </div>
+              <div className="p-4 flex items-center justify-center">
+                {isLoading ? (
+                  <span className="text-muted-foreground animate-pulse">Cargando...</span>
+                ) : (
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {prevSumOf6 ? prevSumOf6.toFixed(1) : "-"}
+                  </span>
+                )}
+              </div>
+              <div className="p-4 flex items-center justify-between bg-primary/5">
+                <span className="text-lg font-bold text-foreground">
+                  {currentSumOf6 ? currentSumOf6.toFixed(1) : "-"}
                 </span>
-              )}
+                {!isLoading && prevSumOf6 !== null && currentSumOf6 !== null && (
+                  <DeltaIndicator
+                    current={currentSumOf6}
+                    previous={prevSumOf6}
+                    inverse={true}
+                  />
+                )}
+              </div>
             </div>
-            <div className="p-4 flex items-center justify-between bg-primary/5">
-              <span className="text-lg font-bold text-foreground">
-                {currentSumOf6 ? currentSumOf6.toFixed(1) : "-"}
-              </span>
-              {!isLoading && prevSumOf6 !== null && currentSumOf6 !== null && (
-                <DeltaIndicator 
-                  current={currentSumOf6} 
-                  previous={prevSumOf6} 
-                  inverse={true}
-                />
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>

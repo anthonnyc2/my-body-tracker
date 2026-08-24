@@ -16,6 +16,7 @@ import { GoalsEditor } from "@/components/GoalsEditor"
 import { getBMICategory, calculateWHR, getWHRRisk, calculateSumOf6, calculateIdealWeight, calculateSomatotype, getBodyFatCategory, getMuscleMassCategory, getBoneMassCategory, calculateGoalProjections } from "@/lib/calculations"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 
 function DeltaIndicator({ current, previous, inverse = false }: { current: number | null, previous: number | null, inverse?: boolean }) {
   if (current === null || previous === null) return <Minus className="h-4 w-4 text-muted-foreground" />
@@ -76,6 +77,7 @@ export default function EvaluationReportPage() {
 
   const { previous } = data
   const { patient } = current
+  const isSimple = current.type === "SIMPLE"
 
   const bmiCategory = current.bmi ? getBMICategory(current.bmi) : null
   const whr = calculateWHR(current.girthWaist ?? 0, current.girthHip ?? 0)
@@ -192,10 +194,18 @@ export default function EvaluationReportPage() {
       <div className="bg-card text-card-foreground shadow-sm rounded-xl border p-8 print:shadow-none print:border-none print:p-0">
         <div className="flex justify-between items-start mb-8 pb-8 border-b">
           <div>
-            <h2 className="text-3xl font-bold">{patient.firstName} {patient.lastName}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-3xl font-bold">{patient.firstName} {patient.lastName}</h2>
+              <span className={cn(
+                "text-[11px] font-bold py-0.5 px-2 rounded-full",
+                isSimple ? "bg-amber-500/10 text-amber-700" : "bg-emerald-500/10 text-emerald-700"
+              )}>
+                {isSimple ? "Simple" : "Completa"}
+              </span>
+            </div>
             <p className="text-muted-foreground">Fecha: {format(
-              new Date(new Date(current.date).getUTCFullYear(), new Date(current.date).getUTCMonth(), new Date(current.date).getUTCDate()), 
-              "dd MMMM yyyy", 
+              new Date(new Date(current.date).getUTCFullYear(), new Date(current.date).getUTCMonth(), new Date(current.date).getUTCDate()),
+              "dd MMMM yyyy",
               { locale: es }
             )}</p>
           </div>
@@ -211,7 +221,16 @@ export default function EvaluationReportPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
+        {isSimple && (
+          <div className="flex items-start gap-3 mb-8 p-4 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5">
+            <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800">
+              <strong>Evaluación simplificada:</strong> no incluye pliegues cutáneos, por lo que no se calculan grasa corporal, masa muscular ni somatotipo. Sigue siendo útil para comparar peso, IMC y perímetros con evaluaciones anteriores.
+            </p>
+          </div>
+        )}
+
+        <div className={cn("grid grid-cols-2 gap-6 mb-8", isSimple ? "md:grid-cols-3" : "md:grid-cols-5")}>
           <div className="p-4 bg-muted/50 rounded-lg text-center flex flex-col justify-center">
             <MetricLabel title="Peso Actual" tooltip="Peso total en el momento de la evaluación." />
             <div className="text-2xl font-bold">{current.weight} kg</div>
@@ -219,24 +238,28 @@ export default function EvaluationReportPage() {
               <DeltaIndicator current={current.weight} previous={previous?.weight || null} inverse={true} />
             </div>
           </div>
-          <div className="p-4 bg-muted/50 rounded-lg text-center flex flex-col justify-center">
-            <MetricLabel title="Masa Adiposa" tooltip="Peso del tejido graso. Niveles elevados aumentan riesgos de salud metabólica y cardiovascular." />
-            <div className="text-2xl font-bold text-red-500">{current.bodyFatKg?.toFixed(1) || "-"} kg</div>
-            <div className="text-xs font-medium text-red-600 mt-1">{current.bodyFatPct?.toFixed(1) || "-"}%</div>
-            {bodyFatCat && <div className={`text-[11px] font-bold mt-1 bg-red-500/10 text-red-700 py-0.5 px-2 rounded-full mx-auto w-fit`}>{bodyFatCat.category}</div>}
-            <div className="flex justify-center mt-2">
-              <DeltaIndicator current={current.bodyFatKg} previous={previous?.bodyFatKg || null} inverse={true} />
+          {!isSimple && (
+            <div className="p-4 bg-muted/50 rounded-lg text-center flex flex-col justify-center">
+              <MetricLabel title="Masa Adiposa" tooltip="Peso del tejido graso. Niveles elevados aumentan riesgos de salud metabólica y cardiovascular." />
+              <div className="text-2xl font-bold text-red-500">{current.bodyFatKg?.toFixed(1) || "-"} kg</div>
+              <div className="text-xs font-medium text-red-600 mt-1">{current.bodyFatPct?.toFixed(1) || "-"}%</div>
+              {bodyFatCat && <div className={`text-[11px] font-bold mt-1 bg-red-500/10 text-red-700 py-0.5 px-2 rounded-full mx-auto w-fit`}>{bodyFatCat.category}</div>}
+              <div className="flex justify-center mt-2">
+                <DeltaIndicator current={current.bodyFatKg} previous={previous?.bodyFatKg || null} inverse={true} />
+              </div>
             </div>
-          </div>
-          <div className="p-4 bg-muted/50 rounded-lg text-center flex flex-col justify-center">
-            <MetricLabel title="Masa Muscular" tooltip="Peso del tejido muscular. Mayor masa aumenta el metabolismo basal, fuerza y salud general." />
-            <div className="text-2xl font-bold text-blue-600">{current.muscleMassKg?.toFixed(1) || "-"} kg</div>
-            <div className="text-xs font-medium text-blue-700 mt-1">{current.muscleMassKg ? ((current.muscleMassKg / current.weight) * 100).toFixed(1) : "-"}%</div>
-            {muscleMassCat && <div className={`text-[11px] font-bold mt-1 bg-blue-500/10 text-blue-700 py-0.5 px-2 rounded-full mx-auto w-fit`}>{muscleMassCat.category}</div>}
-            <div className="flex justify-center mt-2">
-              <DeltaIndicator current={current.muscleMassKg} previous={previous?.muscleMassKg || null} inverse={false} />
+          )}
+          {!isSimple && (
+            <div className="p-4 bg-muted/50 rounded-lg text-center flex flex-col justify-center">
+              <MetricLabel title="Masa Muscular" tooltip="Peso del tejido muscular. Mayor masa aumenta el metabolismo basal, fuerza y salud general." />
+              <div className="text-2xl font-bold text-blue-600">{current.muscleMassKg?.toFixed(1) || "-"} kg</div>
+              <div className="text-xs font-medium text-blue-700 mt-1">{current.muscleMassKg ? ((current.muscleMassKg / current.weight) * 100).toFixed(1) : "-"}%</div>
+              {muscleMassCat && <div className={`text-[11px] font-bold mt-1 bg-blue-500/10 text-blue-700 py-0.5 px-2 rounded-full mx-auto w-fit`}>{muscleMassCat.category}</div>}
+              <div className="flex justify-center mt-2">
+                <DeltaIndicator current={current.muscleMassKg} previous={previous?.muscleMassKg || null} inverse={false} />
+              </div>
             </div>
-          </div>
+          )}
           <div className="p-4 bg-muted/50 rounded-lg text-center flex flex-col justify-center">
             <MetricLabel title="Masa Ósea" tooltip="Peso estimado de tu esqueleto. Depende de genética y nutrición, sirve como indicador de densidad y robustez." />
             <div className="text-2xl font-bold text-slate-600">{current.boneMassKg?.toFixed(1) || "-"} kg</div>
@@ -260,7 +283,7 @@ export default function EvaluationReportPage() {
         {/* Advanced Metrics Grid */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 border-b pb-2">Análisis Avanzado</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+          <div className={cn("grid grid-cols-2 gap-6", isSimple ? "md:grid-cols-3" : "md:grid-cols-5")}>
             <div className="p-4 bg-muted/30 border rounded-lg text-center flex flex-col justify-center">
               <MetricLabel title="IMC" tooltip="Índice de Masa Corporal. Relación estadística entre peso y estatura, útil como referencia médica general pero no discrimina tu nivel de músculo vs grasa." />
               <div className="text-xl font-bold">{current.bmi?.toFixed(1) || "-"}</div>
@@ -270,11 +293,13 @@ export default function EvaluationReportPage() {
                 </div>
               )}
             </div>
-            <div className="p-4 bg-muted/30 border rounded-lg text-center flex flex-col justify-center">
-              <MetricLabel title="Sumatoria 6 Pliegues" tooltip="Suma total de los principales pliegues de grasa corporal (subcutánea). Excelente indicador directo de tu evolución de pérdida o ganancia de tejido adiposo puro." />
-              <div className="text-xl font-bold">{sumOf6 ? `${sumOf6.toFixed(1)} mm` : "N/A"}</div>
-              <div className="text-xs text-muted-foreground mt-1">Grasa subcutánea pura</div>
-            </div>
+            {!isSimple && (
+              <div className="p-4 bg-muted/30 border rounded-lg text-center flex flex-col justify-center">
+                <MetricLabel title="Sumatoria 6 Pliegues" tooltip="Suma total de los principales pliegues de grasa corporal (subcutánea). Excelente indicador directo de tu evolución de pérdida o ganancia de tejido adiposo puro." />
+                <div className="text-xl font-bold">{sumOf6 ? `${sumOf6.toFixed(1)} mm` : "N/A"}</div>
+                <div className="text-xs text-muted-foreground mt-1">Grasa subcutánea pura</div>
+              </div>
+            )}
             <div className="p-4 bg-muted/30 border rounded-lg text-center flex flex-col justify-center">
               <MetricLabel title="Índice Cintura-Cadera" tooltip="Indicador de distribución de grasa. Valores elevados indican acumulación central (abdominal), vinculada a mayor riesgo cardiovascular." />
               <div className="text-xl font-bold">{whr ? whr.toFixed(2) : "N/A"}</div>
@@ -289,10 +314,12 @@ export default function EvaluationReportPage() {
               <div className="text-xl font-bold">{idealWeight ? `${idealWeight.toFixed(1)} kg` : "N/A"}</div>
               <div className="text-xs text-muted-foreground mt-1">Meta Fitness</div>
             </div>
-            <div className="p-4 bg-muted/30 border rounded-lg text-center flex flex-col justify-center">
-              <MetricLabel title="Somatotipo" tooltip="Clasifica tu biotipo: Endomorfo (tendencia acumular grasa), Mesomorfo (atlético, buena masa muscular) o Ectomorfo (delgado, estructura ligera)." />
-              <div className="text-lg font-bold mt-1 leading-tight">{somatotype ? somatotype.classification : "N/A"}</div>
-            </div>
+            {!isSimple && (
+              <div className="p-4 bg-muted/30 border rounded-lg text-center flex flex-col justify-center">
+                <MetricLabel title="Somatotipo" tooltip="Clasifica tu biotipo: Endomorfo (tendencia acumular grasa), Mesomorfo (atlético, buena masa muscular) o Ectomorfo (delgado, estructura ligera)." />
+                <div className="text-lg font-bold mt-1 leading-tight">{somatotype ? somatotype.classification : "N/A"}</div>
+              </div>
+            )}
           </div>
         </div>
 

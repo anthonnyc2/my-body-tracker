@@ -147,15 +147,18 @@ export default function PatientDetailPage() {
               </div>
             ) : (
               <div className="divide-y">
-                {patient.evaluations.map((evaluation: { id: string, date: Date | string, weight: number, bodyFatPct?: number | null, muscleMassKg?: number | null }) => (
+                {patient.evaluations.map((evaluation: { id: string, date: Date | string, type: string, weight: number, bodyFatPct?: number | null, muscleMassKg?: number | null }) => (
                   <div key={evaluation.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                     <div>
-                      <div className="font-medium">
+                      <div className="font-medium flex items-center gap-2">
                         {format(
-                          new Date(new Date(evaluation.date).getUTCFullYear(), new Date(evaluation.date).getUTCMonth(), new Date(evaluation.date).getUTCDate()), 
-                          "dd MMMM yyyy", 
+                          new Date(new Date(evaluation.date).getUTCFullYear(), new Date(evaluation.date).getUTCMonth(), new Date(evaluation.date).getUTCDate()),
+                          "dd MMMM yyyy",
                           { locale: es }
                         )}
+                        <span className={`text-[10px] font-bold py-0.5 px-1.5 rounded-full ${evaluation.type === "SIMPLE" ? "bg-amber-500/10 text-amber-700" : "bg-emerald-500/10 text-emerald-700"}`}>
+                          {evaluation.type === "SIMPLE" ? "Simple" : "Completa"}
+                        </span>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         Peso: {evaluation.weight} kg • Grasa: {evaluation.bodyFatPct?.toFixed(1) || "-"}%

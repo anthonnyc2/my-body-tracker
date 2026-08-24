@@ -102,6 +102,7 @@ export async function createEvaluation(data: EvaluationFormValues) {
       data: {
         patientId: parsed.data.patientId,
         date: parsed.data.date,
+        type: parsed.data.type,
         weight: parsed.data.weight,
         height: parsed.data.height,
         
@@ -466,6 +467,7 @@ export async function getPatientEvaluationsHistory(patientId: string, excludeId?
     select: {
       id: true,
       date: true,
+      type: true,
     },
     orderBy: {
       date: 'desc'

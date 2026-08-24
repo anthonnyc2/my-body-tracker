@@ -33,9 +33,10 @@ export default function EditEvaluationPage() {
   // Map the database evaluation to the form structure
   const initialData: Partial<EvaluationFormValues> = {
     date: evaluation.date,
+    type: evaluation.type,
     weight: evaluation.weight,
     height: evaluation.height,
-    
+
     girthRelaxedArm: evaluation.girthRelaxedArm ?? undefined,
     girthFlexedArm: evaluation.girthFlexedArm ?? undefined,
     girthForearm: evaluation.girthForearm ?? undefined,
