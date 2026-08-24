@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { deleteEvaluationPhotoObjects, getSignedPhotoUrls } from "@/lib/supabase/storage"
 import { EvaluationFormValues, evaluationSchema, GoalsFormValues, goalsSchema } from "@/types/evaluation"
 import { FREE_PLAN_EVALUATION_LIMIT } from "@/lib/constants"
 import { getEffectivePlan } from "@/lib/subscription"
@@ -393,6 +394,7 @@ export async function getEvaluationById(id: string) {
     include: {
       patient: true,
       recommendation: true,
+      photos: true,
     }
   })
 
@@ -411,7 +413,18 @@ export async function getEvaluationById(id: string) {
     }
   })
 
-  return { current: evaluation, previous: previousEvaluation }
+  const signedUrls = await getSignedPhotoUrls(supabase, evaluation.photos.map((p) => p.path))
+  const current = {
+    ...evaluation,
+    photos: evaluation.photos.map((photo) => ({
+      id: photo.id,
+      type: photo.type,
+      createdAt: photo.createdAt,
+      signedUrl: signedUrls.get(photo.path) ?? null,
+    })),
+  }
+
+  return { current, previous: previousEvaluation }
 }
 
 export async function deleteEvaluation(id: string) {
@@ -427,11 +440,19 @@ export async function deleteEvaluation(id: string) {
   try {
     const evaluation = await prisma.evaluation.findUnique({
       where: { id },
-      include: { patient: true }
+      include: { patient: true, photos: true }
     })
 
     if (!evaluation || evaluation.patient.evaluatorId !== user.id) {
       return { error: "Evaluación no encontrada o sin permisos" }
+    }
+
+    if (evaluation.photos.length > 0) {
+      try {
+        await deleteEvaluationPhotoObjects(supabase, evaluation.photos.map((p) => p.path))
+      } catch (error) {
+        console.error("Error deleting evaluation photo objects:", error)
+      }
     }
 
     await prisma.evaluation.delete({

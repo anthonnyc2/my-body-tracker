@@ -25,6 +25,8 @@ import { BodyCompositionChart } from "@/components/charts/BodyCompositionChart"
 import { EvaluationComparison } from "@/components/EvaluationComparison"
 import { RecommendationEditor } from "@/components/RecommendationEditor"
 import { GoalsEditor } from "@/components/GoalsEditor"
+import { PhotosEditor } from "@/components/PhotosEditor"
+import type { EvaluationPhotoType } from "@prisma/client"
 
 const GOAL_LABELS: Record<string, string> = {
   FAT_LOSS: "Pérdida de Grasa",
@@ -67,7 +69,11 @@ function MetricLabel({ title, tooltip }: { title: string, tooltip: string }) {
 }
 
 interface EvaluationReportProps {
-  current: Evaluation & { recommendation?: Recommendation | null }
+  current: Evaluation & {
+    recommendation?: Recommendation | null
+    /** Only populated by the authenticated dashboard action — never fetched or passed on public share pages. */
+    photos?: { type: EvaluationPhotoType; signedUrl: string | null }[]
+  }
   previous?: Evaluation | null
   patient: Patient
   /** Lightweight history (evaluator mode): EvaluationComparison fetches full rows on demand via an auth-only action. */
@@ -409,6 +415,12 @@ export function EvaluationReport({
       )}
 
       <RecommendationEditor evaluationId={current.id} initialData={current.recommendation} readOnly={readOnly} />
+
+      <PhotosEditor
+        evaluationId={current.id}
+        photos={current.photos ?? []}
+        readOnly={readOnly}
+      />
 
       {/* CSS for printing */}
       <style dangerouslySetInnerHTML={{ __html: `

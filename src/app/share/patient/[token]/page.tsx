@@ -15,6 +15,8 @@ export default async function SharePatientPage({ params }: Props) {
   const { token } = await params
   const { prisma } = await import("@/lib/prisma")
 
+  // Intentionally excludes evaluations.photos — this is a public, unauthenticated
+  // page and photos must stay evaluator-only. Do not add `photos: true` here.
   const patient = await prisma.patient.findUnique({
     where: { shareToken: token },
     include: {

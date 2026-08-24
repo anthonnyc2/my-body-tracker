@@ -55,6 +55,13 @@ enum EvaluationType {
   SIMPLE
 }
 
+enum EvaluationPhotoType {
+  FRONTAL
+  POSTERIOR
+  PROFILE_LEFT
+  PROFILE_RIGHT
+}
+
 model User {
   id            String    @id @default(uuid()) // Links to Supabase Auth UUID
   email         String    @unique
@@ -192,13 +199,15 @@ model Evaluation {
 }
 
 model EvaluationPhoto {
-  id            String   @id @default(uuid())
+  id            String              @id @default(uuid())
   evaluationId  String
-  type          String   // FRONTAL, POSTERIOR, PROFILE_LEFT, PROFILE_RIGHT
-  url           String
-  createdAt     DateTime @default(now())
+  type          EvaluationPhotoType
+  path          String              // Supabase Storage object key (private bucket, not a public URL)
+  createdAt     DateTime            @default(now())
 
   evaluation    Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, type])
 }
 
 model Recommendation {

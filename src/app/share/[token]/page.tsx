@@ -10,6 +10,9 @@ export default async function SharePage({ params }: Props) {
   const { token } = await params
   const { prisma } = await import("@/lib/prisma")
 
+  // Intentionally excludes photos — this is a public, unauthenticated page and
+  // photos must stay evaluator-only. Do not add `photos: true` here; EvaluationReport's
+  // `photos` prop is optional and PhotosEditor renders nothing without it.
   const evaluation = await prisma.evaluation.findUnique({
     where: { shareToken: token },
     include: {
