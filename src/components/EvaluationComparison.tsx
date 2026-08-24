@@ -43,18 +43,28 @@ function calculateEvaluationSumOf6(ev: Record<string, unknown> | null | undefine
 interface Props {
   currentEvaluation: { date: string | Date; [key: string]: unknown }
   history: { id: string; date: Date; type?: string }[]
+  /**
+   * When provided, comparison evaluations are looked up locally instead of
+   * being fetched via the auth-only `getEvaluationById` action. Needed for
+   * unauthenticated public share pages, which already have the full patient
+   * evaluation history in hand.
+   */
+  historyEvaluations?: ({ id: string } & Record<string, unknown>)[]
 }
 
-export function EvaluationComparison({ currentEvaluation, history }: Props) {
+export function EvaluationComparison({ currentEvaluation, history, historyEvaluations }: Props) {
   const [selectedId, setSelectedId] = useState<string>(history[0]?.id || "")
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: isFetching } = useQuery({
     queryKey: ["evaluation", selectedId],
     queryFn: () => getEvaluationById(selectedId),
-    enabled: !!selectedId,
+    enabled: !!selectedId && !historyEvaluations,
   })
 
-  const prevEvaluation = data?.current
+  const prevEvaluation = historyEvaluations
+    ? historyEvaluations.find((e) => e.id === selectedId)
+    : data?.current
+  const isLoading = historyEvaluations ? false : isFetching
 
   if (!history.length) return null
 

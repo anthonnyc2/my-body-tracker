@@ -20,11 +20,13 @@ interface RecommendationEditorProps {
     conclusions: string | null
     recommendations: string | null
   } | null
+  readOnly?: boolean
 }
 
-export function RecommendationEditor({ evaluationId, initialData }: RecommendationEditorProps) {
+export function RecommendationEditor({ evaluationId, initialData, readOnly = false }: RecommendationEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const hasContent = Boolean(initialData?.observations || initialData?.conclusions || initialData?.recommendations)
 
   const { register, handleSubmit, formState: { errors } } = useForm<RecommendationFormValues>({
     resolver: zodResolver(recommendationSchema),
@@ -34,6 +36,8 @@ export function RecommendationEditor({ evaluationId, initialData }: Recommendati
       recommendations: initialData?.recommendations || "",
     }
   })
+
+  if (readOnly && !hasContent) return null
 
   const onSubmit = async (data: RecommendationFormValues) => {
     setIsSubmitting(true)
@@ -80,10 +84,12 @@ export function RecommendationEditor({ evaluationId, initialData }: Recommendati
                 Observaciones clínicas, conclusiones y recomendaciones entregadas al paciente.
               </CardDescription>
             </div>
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-              <Edit2 className="w-4 h-4 mr-2" />
-              Editar Reporte
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Editar Reporte
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-6 space-y-6">

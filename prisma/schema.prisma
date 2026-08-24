@@ -113,6 +113,10 @@ model Patient {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Compartir historial con paciente
+  shareToken      String   @unique @default(uuid())
+  viewCount       Int      @default(0)
+
   // Relaciones
   evaluator       User     @relation("EvaluatorToPatient", fields: [evaluatorId], references: [id])
   userProfile     User?    @relation("UserToPatientProfile", fields: [userId], references: [id])

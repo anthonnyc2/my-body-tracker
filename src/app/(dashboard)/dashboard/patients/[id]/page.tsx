@@ -3,7 +3,9 @@
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { Plus, ArrowLeft, Activity, Pencil } from "lucide-react"
+import { useState } from "react"
+import { Plus, ArrowLeft, Activity, Pencil, Share2, Copy, Check } from "lucide-react"
+import QRCode from "react-qr-code"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
@@ -20,6 +22,7 @@ import { DeletePatientButton } from "@/components/DeletePatientButton"
 export default function PatientDetailPage() {
   const params = useParams()
   const id = params.id as string
+  const [copied, setCopied] = useState(false)
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ["patient", id],
@@ -236,6 +239,45 @@ export default function PatientDetailPage() {
         )}
 
       </div>
+
+      {/* Share history section */}
+      {patient.shareToken && (
+        <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Share2 className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold">Compartir Historial</h3>
+          </div>
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="bg-white p-3 rounded-xl border shadow-sm">
+              <QRCode
+                value={`${typeof window !== "undefined" ? window.location.origin : ""}/share/patient/${patient.shareToken}`}
+                size={120}
+              />
+            </div>
+            <div className="flex-1 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                El paciente puede ver todo su historial de evaluaciones escaneando el código QR o accediendo al link. No se requiere cuenta.
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs bg-muted px-3 py-2 rounded-lg break-all">
+                  {typeof window !== "undefined" ? window.location.origin : ""}/share/patient/{patient.shareToken}
+                </code>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/share/patient/${patient.shareToken}`)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
+                >
+                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { getPatients } from "@/actions/patient"
 import { DeletePatientButton } from "@/components/DeletePatientButton"
+import { SharePatientLinkButton } from "@/components/SharePatientLinkButton"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -36,6 +37,7 @@ type PatientRow = {
   birthDate: Date | string
   goal: string
   createdAt: Date | string
+  shareToken: string
 }
 
 export default function PatientsPage() {
@@ -86,11 +88,14 @@ export default function PatientsPage() {
                         <p className="font-medium">{patient.firstName} {patient.lastName}</p>
                         <p className="text-sm text-muted-foreground">{age} años · {GOAL_LABELS[patient.goal]}</p>
                       </div>
-                      <DeletePatientButton
-                        id={patient.id}
-                        patientName={`${patient.firstName} ${patient.lastName}`}
-                        variant="ghost"
-                      />
+                      <div className="flex gap-2">
+                        <SharePatientLinkButton shareToken={patient.shareToken} variant="ghost" />
+                        <DeletePatientButton
+                          id={patient.id}
+                          patientName={`${patient.firstName} ${patient.lastName}`}
+                          variant="ghost"
+                        />
+                      </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Registrado el {format(new Date(patient.createdAt), "dd MMM yyyy", { locale: es })}
@@ -134,6 +139,7 @@ export default function PatientsPage() {
                               Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                           </Link>
+                          <SharePatientLinkButton shareToken={patient.shareToken} variant="ghost" />
                           <DeletePatientButton
                             id={patient.id}
                             patientName={`${patient.firstName} ${patient.lastName}`}

@@ -21,6 +21,7 @@ interface GoalsEditorProps {
   targetMuscleMassPct: number | null
   currentBodyFatPct: number | null
   currentMuscleMassPct: number | null
+  readOnly?: boolean
 }
 
 export function GoalsEditor({
@@ -30,6 +31,7 @@ export function GoalsEditor({
   targetMuscleMassPct,
   currentBodyFatPct,
   currentMuscleMassPct,
+  readOnly = false,
 }: GoalsEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -45,6 +47,9 @@ export function GoalsEditor({
 
   const defaultFatPct = gender === "MALE" ? 15 : 22
   const defaultMusclePct = gender === "MALE" ? 45 : 35
+  const hasTargets = Boolean(targetBodyFatPct || targetMuscleMassPct)
+
+  if (readOnly && !hasTargets) return null
 
   const onSubmit = async (data: GoalsFormValues) => {
     setIsSubmitting(true)
@@ -76,10 +81,12 @@ export function GoalsEditor({
                   : `Aún no se ha definido una meta. Se usa el estándar óptimo por defecto (${defaultFatPct}% grasa / ${defaultMusclePct}% músculo).`}
               </CardDescription>
             </div>
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-              <Edit2 className="w-4 h-4 mr-2" />
-              {targetBodyFatPct || targetMuscleMassPct ? "Editar Metas" : "Definir Metas"}
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                <Edit2 className="w-4 h-4 mr-2" />
+                {targetBodyFatPct || targetMuscleMassPct ? "Editar Metas" : "Definir Metas"}
+              </Button>
+            )}
           </div>
         </CardHeader>
         {(targetBodyFatPct || targetMuscleMassPct) && (
