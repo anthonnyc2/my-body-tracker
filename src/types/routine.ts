@@ -17,7 +17,11 @@ export const routineDayExerciseSchema = z.object({
   thumbnailUrl: z.string().optional(),
   gifUrl: z.string().optional(),
   sets: optionalCount,
-  reps: z.string().min(1, "Indica las repeticiones").max(50),
+  reps: z
+    .string()
+    .min(1, "Indica las repeticiones")
+    .max(50)
+    .refine((val) => !/(^|\s)-\d/.test(val), "No se permiten números negativos"),
   restSeconds: optionalRestSeconds,
   notes: z.string().max(500).optional(),
 })

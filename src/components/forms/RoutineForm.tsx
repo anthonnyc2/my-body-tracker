@@ -266,7 +266,15 @@ function RoutineDayFields({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Series</Label>
-                  <Input type="number" {...register(`days.${dayIndex}.exercises.${exerciseIndex}.sets`)} />
+                  <Input
+                    type="number"
+                    min={1}
+                    max={20}
+                    {...register(`days.${dayIndex}.exercises.${exerciseIndex}.sets`)}
+                  />
+                  {exerciseErrors?.sets && (
+                    <span className="text-xs text-destructive">{exerciseErrors.sets.message}</span>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Reps</Label>
@@ -277,7 +285,15 @@ function RoutineDayFields({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Descanso (s)</Label>
-                  <Input type="number" {...register(`days.${dayIndex}.exercises.${exerciseIndex}.restSeconds`)} />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={3600}
+                    {...register(`days.${dayIndex}.exercises.${exerciseIndex}.restSeconds`)}
+                  />
+                  {exerciseErrors?.restSeconds && (
+                    <span className="text-xs text-destructive">{exerciseErrors.restSeconds.message}</span>
+                  )}
                 </div>
                 <div className="col-span-2 sm:col-span-3 space-y-1">
                   <Label className="text-xs">Notas</Label>
