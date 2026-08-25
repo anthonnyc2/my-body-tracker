@@ -27,12 +27,12 @@ Key routing rules:
 
 ## Deploy Configuration (configured by /setup-deploy)
 - Platform: Vercel
-- Production URL: not yet confirmed — ask the user or check the Vercel project dashboard
+- Production URL: https://my-body-tracker-three.vercel.app/
 - Deploy workflow: auto-deploy on push to `main` (no GitHub Actions deploy workflow in this repo)
-- Deploy status command: none configured — verify via the Vercel dashboard or a manual HTTP check once the URL is confirmed
-- Merge method: not yet confirmed
+- Deploy status command: `gh api repos/anthonnyc2/my-body-tracker/commits/<sha>/status` (Vercel posts a commit status; `state: "success"` once the deploy completes)
+- Merge method: direct push to `main` (no PR flow observed so far)
 - Project type: web app (Next.js)
-- Post-deploy health check: not yet configured
+- Post-deploy health check: `curl -o /dev/null -w '%{http_code}' https://my-body-tracker-three.vercel.app/` (expect `307`, redirect to `/login`)
 
 ### Custom deploy hooks
 - Pre-merge: `pnpm lint && pnpm exec tsc --noEmit && pnpm build`
