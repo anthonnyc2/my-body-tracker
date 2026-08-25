@@ -20,9 +20,13 @@ export default function RoutineDetailPage() {
     queryFn: () => getRoutineById(id),
   })
 
-  // Keep a stable array reference across refetches (routine.days.map(...) would
-  // otherwise return a new array every render, which Base UI's uncontrolled
-  // Accordion reads as the defaultValue "changing" and warns about).
+  // Days can genuinely change after mount (edit the routine, come back to
+  // this page -- react-query may briefly serve stale cached days before the
+  // refetch lands). An uncontrolled Accordion's `defaultValue` only applies
+  // once, so `key={dayIdsKey}` forces a fresh mount (and a fresh default)
+  // whenever the actual set of days changes, while `useMemo` keeps the array
+  // reference stable when it hasn't -- together that avoids Base UI's
+  // "changing the default value after initialized" warning either way.
   const dayIdsKey = routine?.days.map((d) => d.id).join(",") ?? ""
   const dayIds = useMemo(() => (dayIdsKey ? dayIdsKey.split(",") : []), [dayIdsKey])
 
@@ -70,7 +74,7 @@ export default function RoutineDetailPage() {
       )}
 
       <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
-        <Accordion multiple defaultValue={dayIds}>
+        <Accordion key={dayIdsKey} multiple defaultValue={dayIds}>
           {routine.days.map((day) => (
             <AccordionItem key={day.id} value={day.id}>
               <AccordionTrigger>{day.label}</AccordionTrigger>

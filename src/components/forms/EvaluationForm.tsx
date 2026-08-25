@@ -23,7 +23,12 @@ import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-export function EvaluationForm({ 
+// Module-level constant so the reference never changes across renders --
+// an inline `["tronco"]` literal would be a new array every render, which
+// Base UI's uncontrolled Accordion reads as the defaultValue "changing".
+const ACCORDION_DEFAULT_OPEN = ["tronco"]
+
+export function EvaluationForm({
   patientId, 
   evaluationId,
   initialWeight, 
@@ -247,7 +252,7 @@ export function EvaluationForm({
 
         {/* PERIMETROS */}
         <TabsContent value="perimetros" className="p-4 border rounded-md mt-4 space-y-4 bg-card text-card-foreground shadow-sm">
-          <Accordion defaultValue={["tronco"]} className="w-full">
+          <Accordion defaultValue={ACCORDION_DEFAULT_OPEN} className="w-full">
             <AccordionItem value="tronco" className="border-b-0 mb-2 border rounded-lg px-4 bg-muted/30">
               <AccordionTrigger className="text-lg font-semibold hover:no-underline">Tronco</AccordionTrigger>
               <AccordionContent className="pt-2 pb-6">
@@ -313,7 +318,7 @@ export function EvaluationForm({
         {/* PLIEGUES */}
         {evalType === "FULL" && (
           <TabsContent value="pliegues" className="p-4 border rounded-md mt-4 space-y-4 bg-card text-card-foreground shadow-sm">
-            <Accordion defaultValue={["tronco"]} className="w-full">
+            <Accordion defaultValue={ACCORDION_DEFAULT_OPEN} className="w-full">
               <AccordionItem value="tronco" className="border-b-0 mb-2 border rounded-lg px-4 bg-muted/30">
                 <AccordionTrigger className="text-lg font-semibold hover:no-underline">Tronco</AccordionTrigger>
                 <AccordionContent className="pt-2 pb-6">
