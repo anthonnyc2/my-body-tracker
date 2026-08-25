@@ -24,3 +24,20 @@ Key routing rules:
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
 - Author a backlog-ready spec/issue → invoke /spec
+
+## Deploy Configuration (configured by /setup-deploy)
+- Platform: Vercel
+- Production URL: not yet confirmed — ask the user or check the Vercel project dashboard
+- Deploy workflow: auto-deploy on push to `main` (no GitHub Actions deploy workflow in this repo)
+- Deploy status command: none configured — verify via the Vercel dashboard or a manual HTTP check once the URL is confirmed
+- Merge method: not yet confirmed
+- Project type: web app (Next.js)
+- Post-deploy health check: not yet configured
+
+### Custom deploy hooks
+- Pre-merge: `pnpm lint && pnpm exec tsc --noEmit && pnpm build`
+- Deploy trigger: automatic on push to `main` (Vercel GitHub integration)
+- Production DB migrations: **not yet automated.** Prisma schema changes need `prisma migrate deploy` run against the production `DIRECT_URL` (see `.env.production`) before/with the deploy that depends on them — otherwise the new Prisma client (matching the updated schema) will error on any query touching the changed table once deployed, since the columns won't exist in the DB yet.
+  - Recommended fix (not yet applied — requires Vercel dashboard access this session doesn't have): set the Vercel Project's Build Command to `prisma migrate deploy && next build` so every production build applies pending migrations automatically using Vercel's own `DATABASE_URL`/`DIRECT_URL` env vars.
+  - Until that's set up, migrations against prod must be run manually (by the user, or by an agent explicitly granted permission — Claude Code's auto-mode classifier blocks unattended writes/reads against a production database by design).
+- Health check: not yet configured
