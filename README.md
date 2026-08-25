@@ -65,8 +65,10 @@ El deploy es a Vercel. El Build Command del proyecto está configurado como `pri
 
 Esto funciona porque `prisma.config.ts` apunta el `datasource.url` que usa el CLI de Prisma (migrate, studio, db pull) a `DIRECT_URL`, no a `DATABASE_URL`:
 
-- **`DATABASE_URL`** es la conexión pooleada de Supabase (Supavisor/pgbouncer, puerto `6543`). La usa el cliente de la app en runtime (`src/lib/prisma.ts`, vía `@prisma/adapter-pg`) — nunca pasa por `prisma.config.ts`.
-- **`DIRECT_URL`** es la conexión directa a Postgres (host `db.<project-ref>.supabase.co`, puerto `5432`, Project Settings → Database → Connection string → "Direct connection"). La usa el CLI de Prisma para todo (`migrate deploy`, `migrate dev`, `migrate status`, etc.), porque Prisma Migrate necesita locks de sesión que el pooler en modo transacción no soporta bien.
+- **`DATABASE_URL`** es la conexión pooleada en modo *transaction* de Supabase (Supavisor/pgbouncer, host `aws-0-<region>.pooler.supabase.com`, puerto `6543`). La usa el cliente de la app en runtime (`src/lib/prisma.ts`, vía `@prisma/adapter-pg`) — nunca pasa por `prisma.config.ts`.
+- **`DIRECT_URL`** es la conexión pooleada en modo *session* de Supabase (mismo host `aws-0-<region>.pooler.supabase.com`, puerto `5432`, usuario `postgres.<project-ref>` — Project Settings → Database → Connection string → "Session pooler"). La usa el CLI de Prisma para todo (`migrate deploy`, `migrate dev`, `migrate status`, etc.), porque Prisma Migrate necesita locks de sesión que el modo *transaction* no soporta.
+
+  ⚠️ **No uses la "Direct connection" cruda de Supabase** (host `db.<project-ref>.supabase.co:5432`) para `DIRECT_URL` en Vercel. Ese host es **solo IPv6** a menos que pagues el add-on de IPv4, y el entorno de build de Vercel es IPv4-only — el deploy falla con `P1001: Can't reach database server`. El *Session pooler* da el mismo soporte de locks de sesión que necesita Migrate, pero sobre una IP compatible con IPv4.
 
 Ambas variables deben existir en el entorno (local `.env`/`.env.local`, y en Vercel → Project Settings → Environment Variables para Production). En local development apuntan a la misma base (no hay pooler), así que no hay diferencia de comportamiento.
 
