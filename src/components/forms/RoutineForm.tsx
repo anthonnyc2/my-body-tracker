@@ -7,10 +7,11 @@ import {
   useFieldArray,
   Control,
   UseFormRegister,
+  UseFormGetValues,
   FieldErrors,
 } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react"
+import { Loader2, Plus, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,7 @@ export function RoutineForm({ patientId, routineId, initialData }: RoutineFormPr
     register,
     control,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<RoutineFormInput, unknown, RoutineFormValues>({
     resolver: zodResolver(routineSchema),
@@ -98,6 +100,7 @@ export function RoutineForm({ patientId, routineId, initialData }: RoutineFormPr
             key={day.id}
             control={control}
             register={register}
+            getValues={getValues}
             errors={errors}
             dayIndex={dayIndex}
             onRemoveDay={() => removeDay(dayIndex)}
@@ -133,6 +136,7 @@ export function RoutineForm({ patientId, routineId, initialData }: RoutineFormPr
 function RoutineDayFields({
   control,
   register,
+  getValues,
   errors,
   dayIndex,
   onRemoveDay,
@@ -144,6 +148,7 @@ function RoutineDayFields({
 }: {
   control: Control<RoutineFormInput>
   register: UseFormRegister<RoutineFormInput>
+  getValues: UseFormGetValues<RoutineFormInput>
   errors: FieldErrors<RoutineFormInput>
   dayIndex: number
   onRemoveDay: () => void
@@ -158,7 +163,13 @@ function RoutineDayFields({
     append: appendExercise,
     remove: removeExercise,
     move: moveExercise,
+    insert: insertExercise,
   } = useFieldArray({ control, name: `days.${dayIndex}.exercises` })
+
+  function handleDuplicate(exerciseIndex: number) {
+    const current = getValues(`days.${dayIndex}.exercises.${exerciseIndex}`)
+    insertExercise(exerciseIndex + 1, { ...current })
+  }
 
   const dayErrors = errors.days?.[dayIndex]
   const [hoveredExerciseId, setHoveredExerciseId] = useState<string | null>(null)
@@ -277,15 +288,26 @@ function RoutineDayFields({
                   />
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeExercise(exerciseIndex)}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-                <span className="sr-only">Quitar ejercicio</span>
-              </Button>
+              <div className="flex flex-col gap-0.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDuplicate(exerciseIndex)}
+                >
+                  <Copy className="h-4 w-4" />
+                  <span className="sr-only">Duplicar ejercicio</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeExercise(exerciseIndex)}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <span className="sr-only">Quitar ejercicio</span>
+                </Button>
+              </div>
             </div>
           )
         })}
