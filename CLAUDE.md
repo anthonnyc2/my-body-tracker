@@ -37,7 +37,7 @@ Key routing rules:
 ### Custom deploy hooks
 - Pre-merge: `pnpm lint && pnpm exec tsc --noEmit && pnpm build`
 - Deploy trigger: automatic on push to `main` (Vercel GitHub integration)
-- Production DB migrations: **not yet automated.** Prisma schema changes need `prisma migrate deploy` run against the production `DIRECT_URL` (see `.env.production`) before/with the deploy that depends on them — otherwise the new Prisma client (matching the updated schema) will error on any query touching the changed table once deployed, since the columns won't exist in the DB yet.
-  - Recommended fix (not yet applied — requires Vercel dashboard access this session doesn't have): set the Vercel Project's Build Command to `prisma migrate deploy && next build` so every production build applies pending migrations automatically using Vercel's own `DATABASE_URL`/`DIRECT_URL` env vars.
-  - Until that's set up, migrations against prod must be run manually (by the user, or by an agent explicitly granted permission — Claude Code's auto-mode classifier blocks unattended writes/reads against a production database by design).
+- Production DB migrations: **automated.** Vercel's Build Command is `prisma migrate deploy && next build`, and `prisma.config.ts` resolves the Prisma CLI's datasource to `DIRECT_URL` (not the pooled `DATABASE_URL` the app uses at runtime), so migrations run automatically on every production build against the correct, non-pooled connection. Requires `DIRECT_URL` to be set as a Vercel Production environment variable (it already is, alongside `DATABASE_URL`).
+  - `/land-and-deploy` can now be used end-to-end: commit, push to `main`, Vercel builds, migrates, and deploys automatically. No manual migration step needed for ordinary schema changes.
+  - Sanity-check after a schema change: `pnpm prisma migrate status` locally (uses `.env`'s `DIRECT_URL`, harmless since local dev has no pooler) confirms the migration exists and is well-formed before pushing.
 - Health check: not yet configured

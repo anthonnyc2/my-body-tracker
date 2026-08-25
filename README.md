@@ -61,16 +61,20 @@ Configura las variables de entorno en `.env` si necesitas cambiarlas.
 
 ## Deploy y migraciones en producción
 
-El deploy es a Vercel con la configuración por defecto (no hay `vercel.json` ni CI configurado en el repo). El `build` (`next build`) y el `postinstall` (`prisma generate`) **no aplican migraciones** — `prisma generate` solo regenera el cliente/tipos a partir del schema, no toca la base de datos.
+El deploy es a Vercel. El Build Command del proyecto está configurado como `prisma migrate deploy && next build`, así que **las migraciones pendientes se aplican automáticamente en cada deploy**, antes de que el build nuevo reciba tráfico.
 
-Esto significa que **las migraciones pendientes deben aplicarse manualmente contra la base de producción antes de que el deploy con el código nuevo reciba tráfico**. Si el código llega a producción sin que la migración se haya corrido, cualquier query que use columnas nuevas del schema falla con un error de Prisma tipo `Unknown argument`.
+Esto funciona porque `prisma.config.ts` apunta el `datasource.url` que usa el CLI de Prisma (migrate, studio, db pull) a `DIRECT_URL`, no a `DATABASE_URL`:
 
-Para aplicar las migraciones pendientes en producción:
+- **`DATABASE_URL`** es la conexión pooleada de Supabase (Supavisor/pgbouncer, puerto `6543`). La usa el cliente de la app en runtime (`src/lib/prisma.ts`, vía `@prisma/adapter-pg`) — nunca pasa por `prisma.config.ts`.
+- **`DIRECT_URL`** es la conexión directa a Postgres (host `db.<project-ref>.supabase.co`, puerto `5432`, Project Settings → Database → Connection string → "Direct connection"). La usa el CLI de Prisma para todo (`migrate deploy`, `migrate dev`, `migrate status`, etc.), porque Prisma Migrate necesita locks de sesión que el pooler en modo transacción no soporta bien.
+
+Ambas variables deben existir en el entorno (local `.env`/`.env.local`, y en Vercel → Project Settings → Environment Variables para Production). En local development apuntan a la misma base (no hay pooler), así que no hay diferencia de comportamiento.
+
+Para verificar o aplicar migraciones manualmente (por ejemplo, si el Build Command de Vercel cambia o corres esto desde otra máquina):
 
 ```bash
-DATABASE_URL="<url-de-produccion>" pnpm prisma migrate deploy
+pnpm prisma migrate status   # solo lee, no aplica nada
+pnpm prisma migrate deploy   # aplica las migraciones pendientes
 ```
 
-- `migrate deploy` (a diferencia de `migrate dev`) solo aplica migraciones ya existentes en `prisma/migrations/` — no genera ninguna nueva ni pide confirmación interactiva. Es el comando indicado para CI/producción.
-- **Usa la conexión directa a Postgres, no el connection pooler de Supabase (Supavisor/pgbouncer, puerto `6543`).** Prisma Migrate necesita locks de sesión que el pooler en modo transacción no soporta bien y la migración puede quedarse colgada. En Supabase, la conexión directa usa el host `db.<project-ref>.supabase.co` en el puerto `5432` (Project Settings → Database → Connection string → "Direct connection"), a diferencia del host del pooler (`aws-*.pooler.supabase.com:6543`). El `DATABASE_URL` en `.env`/Vercel para runtime de la app sí puede seguir usando el pooler (`6543`) normalmente; usa el host de conexión directa solo para correr migraciones.
-- Verifica el estado de las migraciones sin aplicar nada con `DATABASE_URL="<url>" pnpm prisma migrate status`.
+Ambos comandos ya usan `DIRECT_URL` automáticamente gracias a `prisma.config.ts` — no hace falta pasar `DATABASE_URL` a mano, siempre que `DIRECT_URL` esté definida en el `.env` que se esté usando.
