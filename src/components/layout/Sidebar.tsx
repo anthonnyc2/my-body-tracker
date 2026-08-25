@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { 
-  Users, 
-  Activity, 
-  Settings, 
-  BarChart3
+import {
+  Users,
+  Activity,
+  Settings,
+  BarChart3,
+  Dumbbell
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -25,6 +26,11 @@ const navItems = [
     title: "Evaluaciones",
     href: "/dashboard/evaluations",
     icon: Activity,
+  },
+  {
+    title: "Rutinas",
+    href: "/dashboard/routines",
+    icon: Dumbbell,
   },
   {
     title: "Configuración",

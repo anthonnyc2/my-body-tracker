@@ -76,6 +76,7 @@ model User {
   managedPatients Patient[]     @relation("EvaluatorToPatient")
   patientProfile  Patient?      @relation("UserToPatientProfile")
   subscription    Subscription?
+  routines        Routine[]     @relation("EvaluatorToRoutine")
 }
 
 model Subscription {
@@ -128,6 +129,7 @@ model Patient {
   evaluator       User     @relation("EvaluatorToPatient", fields: [evaluatorId], references: [id])
   userProfile     User?    @relation("UserToPatientProfile", fields: [userId], references: [id])
   evaluations     Evaluation[]
+  routines        Routine[]
 }
 
 model Evaluation {
@@ -216,9 +218,83 @@ model Recommendation {
   observations  String?  @db.Text
   conclusions   String?  @db.Text
   recommendations String? @db.Text
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   evaluation    Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+}
+
+model Exercise {
+  id               String   @id // Id original del dataset de origen, para upserts idempotentes al re-seedear
+  name             String
+  nameEn           String   // Nombre original en inglés del dataset, solo para búsqueda bilingüe (no se muestra en la UI)
+  category         String   // Parte del cuerpo / grupo muscular (string libre: vocabulario lo controla el dataset de origen)
+  equipment        String?
+  targetMuscle     String?
+  secondaryMuscles String[] @default([])
+  instructionsEs   String[] @default([])
+  thumbnailUrl     String?
+  gifUrl           String?
+  sourceUrl        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  routineDayExercises RoutineDayExercise[]
+
+  @@index([category])
+  @@index([equipment])
+  @@index([targetMuscle])
+  @@index([name])
+  @@index([nameEn])
+}
+
+model Routine {
+  id          String    @id @default(uuid())
+  patientId   String
+  evaluatorId String    // Denormalizado de patient.evaluatorId al crear, para checks de ownership sin joins extra
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  patient   Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  evaluator User         @relation("EvaluatorToRoutine", fields: [evaluatorId], references: [id])
+  days      RoutineDay[]
+
+  @@index([patientId])
+  @@index([evaluatorId])
+}
+
+model RoutineDay {
+  id        String  @id @default(uuid())
+  routineId String
+  order     Int     // Sort key manejado por la app (reescrito completo en cada guardado), sin constraint de unicidad
+  label     String
+  notes     String?
+
+  routine   Routine              @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exercises RoutineDayExercise[]
+
+  @@index([routineId, order])
+}
+
+model RoutineDayExercise {
+  id           String  @id @default(uuid())
+  routineDayId String
+  exerciseId   String
+  order        Int
+  sets         Int?
+  reps         String? // String y no Int: admite "8-12", "AMRAP", "al fallo"
+  restSeconds  Int?
+  notes        String?
+
+  routineDay RoutineDay @relation(fields: [routineDayId], references: [id], onDelete: Cascade)
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id])
+
+  @@index([routineDayId, order])
+  @@index([exerciseId])
 }
