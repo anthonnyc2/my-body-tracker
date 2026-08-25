@@ -13,6 +13,7 @@ import { UpgradeBanner } from "@/components/UpgradeBanner"
 import { getPatientById } from "@/actions/patient"
 import { getEvaluationUsage } from "@/actions/subscription"
 import { getRoutinesByPatientId } from "@/actions/routine"
+import { calculateAge } from "@/lib/calculations"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -50,7 +51,7 @@ export default function PatientDetailPage() {
     return <div className="p-8 text-center">Paciente no encontrado</div>
   }
 
-  const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
+  const age = calculateAge(patient.birthDate)
 
   // Reverse evaluations for chronological chart order
   const chartData = patient.evaluations 

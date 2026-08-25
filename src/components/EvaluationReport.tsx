@@ -15,6 +15,7 @@ import {
   getMuscleMassCategory,
   getBoneMassCategory,
   calculateGoalProjections,
+  calculateAge,
 } from "@/lib/calculations"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -121,7 +122,7 @@ export function EvaluationReport({
 
   const measurements = {
     gender: patient.gender,
-    age: new Date().getFullYear() - new Date(patient.birthDate).getFullYear(),
+    age: current.decimalAge ?? calculateAge(patient.birthDate, current.date),
     weight: current.weight,
     height: current.height,
     girthRelaxedArm: current.girthRelaxedArm ?? undefined,

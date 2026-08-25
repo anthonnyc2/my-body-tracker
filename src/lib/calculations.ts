@@ -1,5 +1,15 @@
 import type { Gender } from "@prisma/client"
 
+export function calculateAge(birthDate: Date | string, asOf: Date = new Date()): number {
+  const birth = new Date(birthDate)
+  let age = asOf.getFullYear() - birth.getFullYear()
+  const monthDiff = asOf.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && asOf.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
 export interface Measurements {
   gender: Gender
   age: number

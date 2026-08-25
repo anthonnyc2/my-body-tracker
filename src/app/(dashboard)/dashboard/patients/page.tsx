@@ -16,6 +16,7 @@ import {
 import { getPatients } from "@/actions/patient"
 import { DeletePatientButton } from "@/components/DeletePatientButton"
 import { SharePatientLinkButton } from "@/components/SharePatientLinkButton"
+import { calculateAge } from "@/lib/calculations"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -80,7 +81,7 @@ export default function PatientsPage() {
             {/* Mobile: card list. The table below is unreadable and overflows below md. */}
             <div className="divide-y lg:hidden">
               {(patients as PatientRow[]).map((patient) => {
-                const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
+                const age = calculateAge(patient.birthDate)
                 return (
                   <div key={patient.id} className="flex flex-col gap-3 p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -123,7 +124,7 @@ export default function PatientsPage() {
               </TableHeader>
               <TableBody>
                 {(patients as PatientRow[]).map((patient) => {
-                  const age = new Date().getFullYear() - new Date(patient.birthDate).getFullYear()
+                  const age = calculateAge(patient.birthDate)
                   return (
                     <TableRow key={patient.id}>
                       <TableCell className="font-medium">
