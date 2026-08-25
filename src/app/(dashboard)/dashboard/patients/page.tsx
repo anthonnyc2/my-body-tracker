@@ -133,7 +133,7 @@ export default function PatientsPage() {
                       <TableCell>{GOAL_LABELS[patient.goal]}</TableCell>
                       <TableCell>{format(new Date(patient.createdAt), "dd MMM yyyy", { locale: es })}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2">
                           <Link href={`/dashboard/patients/${patient.id}`}>
                             <Button variant="ghost" size="sm">
                               Ver Detalle <ArrowRight className="ml-2 h-4 w-4" />

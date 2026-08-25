@@ -20,6 +20,7 @@ import { EvolutionChart } from "@/components/charts/EvolutionChart"
 import { DeleteEvaluationButton } from "@/components/DeleteEvaluationButton"
 import { DeletePatientButton } from "@/components/DeletePatientButton"
 import { DeleteRoutineButton } from "@/components/DeleteRoutineButton"
+import { SharePatientLinkButton } from "@/components/SharePatientLinkButton"
 
 export default function PatientDetailPage() {
   const params = useParams()
@@ -80,6 +81,9 @@ export default function PatientDetailPage() {
           </h1>
         </div>
         <div className="flex flex-wrap gap-2 sm:ml-auto">
+          {patient.shareToken && (
+            <SharePatientLinkButton shareToken={patient.shareToken} variant="outline" label="Compartir" />
+          )}
           <Link href={`/dashboard/patients/${patient.id}/edit`}>
             <Button variant="outline">
               <Pencil className="mr-2 h-4 w-4" /> Editar Paciente
@@ -91,22 +95,6 @@ export default function PatientDetailPage() {
             redirectUrl="/dashboard/patients"
             label="Eliminar Paciente"
           />
-          {usage?.isAtLimit ? (
-            <Tooltip>
-              <TooltipTrigger render={<Button disabled />}>
-                <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
-              </TooltipTrigger>
-              <TooltipContent>
-                Límite de {usage.limit} evaluaciones del plan gratuito alcanzado
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <Link href={`/dashboard/patients/${patient.id}/evaluations/new`}>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
 
@@ -147,8 +135,24 @@ export default function PatientDetailPage() {
 
         {/* Evaluations History - Moved to right side for better layout if charts are many */}
         <div className="rounded-xl border bg-card text-card-foreground shadow flex flex-col md:col-span-3 lg:col-span-2">
-          <div className="p-6 border-b">
+          <div className="p-6 border-b flex items-center justify-between">
             <h3 className="text-lg font-medium">Historial de Evaluaciones</h3>
+            {usage?.isAtLimit ? (
+              <Tooltip>
+                <TooltipTrigger render={<Button size="sm" disabled />}>
+                  <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
+                </TooltipTrigger>
+                <TooltipContent>
+                  Límite de {usage.limit} evaluaciones del plan gratuito alcanzado
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Link href={`/dashboard/patients/${patient.id}/evaluations/new`}>
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" /> Nueva Evaluación
+                </Button>
+              </Link>
+            )}
           </div>
           <div className="p-0 flex-1 max-h-[350px] overflow-y-auto">
             {!patient.evaluations || patient.evaluations.length === 0 ? (
@@ -180,6 +184,47 @@ export default function PatientDetailPage() {
                         <Button variant="outline" size="sm">Ver Reporte</Button>
                       </Link>
                       <DeleteEvaluationButton id={evaluation.id} variant="ghost" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Routines section */}
+        <div className="md:col-span-3 rounded-xl border bg-card text-card-foreground shadow">
+          <div className="p-6 border-b flex items-center justify-between">
+            <h3 className="text-lg font-medium">Rutinas de Ejercicio</h3>
+            <Link href={`/dashboard/patients/${patient.id}/routines/new`}>
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" /> Nueva Rutina
+              </Button>
+            </Link>
+          </div>
+          <div className="p-0">
+            {!routines || routines.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
+                <Dumbbell className="h-8 w-8 mb-4 opacity-20" />
+                <p>No hay rutinas asignadas</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {routines.map((routine) => (
+                  <div key={routine.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                    <div>
+                      <div className="font-medium">{routine.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {routine.isActive ? "Activa" : "Inactiva"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/routines/${routine.id}`}>
+                        <Button variant="outline" size="sm">
+                          <FileText className="mr-2 h-4 w-4" /> Ver Rutina
+                        </Button>
+                      </Link>
+                      <DeleteRoutineButton id={routine.id} routineName={routine.name} variant="ghost" />
                     </div>
                   </div>
                 ))}
@@ -245,47 +290,6 @@ export default function PatientDetailPage() {
           </div>
         )}
 
-      </div>
-
-      {/* Routines section */}
-      <div className="rounded-xl border bg-card text-card-foreground shadow">
-        <div className="p-6 border-b flex items-center justify-between">
-          <h3 className="text-lg font-medium">Rutinas de Ejercicio</h3>
-          <Link href={`/dashboard/patients/${patient.id}/routines/new`}>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Nueva Rutina
-            </Button>
-          </Link>
-        </div>
-        <div className="p-0">
-          {!routines || routines.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
-              <Dumbbell className="h-8 w-8 mb-4 opacity-20" />
-              <p>No hay rutinas asignadas</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {routines.map((routine) => (
-                <div key={routine.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                  <div>
-                    <div className="font-medium">{routine.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {routine.isActive ? "Activa" : "Inactiva"}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link href={`/dashboard/routines/${routine.id}`}>
-                      <Button variant="outline" size="sm">
-                        <FileText className="mr-2 h-4 w-4" /> Ver Rutina
-                      </Button>
-                    </Link>
-                    <DeleteRoutineButton id={routine.id} routineName={routine.name} variant="ghost" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Share history section */}
