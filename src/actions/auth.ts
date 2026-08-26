@@ -70,6 +70,12 @@ export async function signupAction(formData: FormData) {
   })
 
   if (error) {
+    // Errores 5xx (ej. fallo al enviar el email de confirmación) llegan con
+    // error.message = "{}": @supabase/auth-js serializa el Response crudo
+    // cuando no encuentra un campo msg/message/error_description/error.
+    if (error.status && error.status >= 500) {
+      return { error: "No pudimos completar el registro en este momento. Intenta de nuevo en unos minutos." }
+    }
     return { error: error.message }
   }
 
